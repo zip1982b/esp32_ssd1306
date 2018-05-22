@@ -23,9 +23,9 @@
 #include "ssd1306.h"
 
 /* Write command */
-#define SSD1306_WRITECOMMAND(command)      ssd1306_I2C_Write(SSD1306_I2C, SSD1306_I2C_ADDR, 0x00, (command))
+#define SSD1306_WRITECOMMAND(command)      ssd1306_I2C_Write(0x00, (command))
 /* Write data */
-#define SSD1306_WRITEDATA(data)            ssd1306_I2C_Write(SSD1306_I2C, SSD1306_I2C_ADDR, 0x40, (data))
+#define SSD1306_WRITEDATA(data)            ssd1306_I2C_Write(0x40, (data))
 /* Absolute value */
 #define ABS(x)   ((x) > 0 ? (x) : -(x))
 
@@ -43,37 +43,27 @@ typedef struct {
 /* Private variable */
 static SSD1306_t SSD1306;
 
+
+
+
+
 uint8_t SSD1306_Init(void) {
 
 	/* Init I2C */
 	i2c_master_init();
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/* Check if LCD connected to I2C */
-	if (!ssd1306_I2C_IsDeviceConnected(SSD1306_I2C, SSD1306_I2C_ADDR)) {
+	if (!ssd1306_I2C_IsDeviceConnected()) {
 		/* Return false */
 		return 0;
 	}
 	
-	/* A little delay */
-	uint32_t p = 2500;
-	while(p>0)
-		p--;
-	
 	/* Init LCD */
-	SSD1306_WRITECOMMAND(0xAE); //display off
-	SSD1306_WRITECOMMAND(0x20); //Set Memory Addressing Mode   
+	SSD1306_WRITECOMMAND(OLED_CMD_DISPLAY_OFF); //display off
+	SSD1306_WRITECOMMAND(OLED_CMD_SET_MEMORY_ADDR_MODE); //Set Memory Addressing Mode   
 	SSD1306_WRITECOMMAND(0x10); //00,Horizontal Addressing Mode;01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
 	SSD1306_WRITECOMMAND(0xB0); //Set Page Start Address for Page Addressing Mode,0-7
-	SSD1306_WRITECOMMAND(0xC8); //Set COM Output Scan Direction
+	SSD1306_WRITECOMMAND(OLED_CMD_SET_COM_SCAN_DIRECTION); //Set COM Output Scan Direction
 	SSD1306_WRITECOMMAND(0x00); //---set low column address
 	SSD1306_WRITECOMMAND(0x10); //---set high column address
 	SSD1306_WRITECOMMAND(0x40); //--set start line address
@@ -124,7 +114,7 @@ void SSD1306_UpdateScreen(void) {
 		SSD1306_WRITECOMMAND(0x10);
 		
 		/* Write multi data */
-		ssd1306_I2C_WriteMulti(SSD1306_I2C, SSD1306_I2C_ADDR, 0x40, &SSD1306_Buffer[SSD1306_WIDTH * m], SSD1306_WIDTH);
+		ssd1306_I2C_WriteMulti(0x40, &SSD1306_Buffer[SSD1306_WIDTH * m], SSD1306_WIDTH);
 	}
 }
 

@@ -12,12 +12,6 @@
  * It also allows you to draw texts and characters using appropriate functions provided in library.
  *
  *
-SSD1306    |ESP32        |DESCRIPTION
-
-VCC        |3.3V         |
-GND        |GND          |
-SCL        |19           |Serial clock line
-SDA        |18           |Serial data line
  */
 
 /* SSD1306 settings */
@@ -44,7 +38,7 @@ typedef enum {
 
 
 // SLA (0x3C) + WRITE_MODE (0x00) =  0x78 (0b01111000)
-#define OLED_I2C_ADDRESS   0x3C
+
 
 // Control byte
 #define OLED_CONTROL_BYTE_CMD_SINGLE    0x80
@@ -76,7 +70,7 @@ typedef enum {
 #define OLED_CMD_SET_DISPLAY_START_LINE 0x40
 #define OLED_CMD_SET_SEGMENT_REMAP      0xA1    
 #define OLED_CMD_SET_MUX_RATIO          0xA8    // follow with 0x3F = 64 MUX
-#define OLED_CMD_SET_COM_SCAN_MODE      0xC8    
+#define OLED_CMD_SET_COM_SCAN_DIRECTION 0xC8    // Set COM Output Scan Direction
 #define OLED_CMD_SET_DISPLAY_OFFSET     0xD3    // follow with 0x00
 #define OLED_CMD_SET_COM_PIN_MAP        0xDA    // follow with 0x12
 #define OLED_CMD_NOP                    0xE3    // NOP

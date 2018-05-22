@@ -1,8 +1,10 @@
 /**
  * original author:  Tilen Majerle<tilen@majerle.eu>
  * modification for STM32f10x: Alexander Lutsai<s.lyra@ya.ru>
+ * modification for ESP32: Zhan Beshchanov<zip1982b@gmail.com>
 
    ----------------------------------------------------------------------
+    Copyright (C) Zhan Beshchanov, 2018
    	Copyright (C) Alexander Lutsai, 2016
     Copyright (C) Tilen Majerle, 2015
 
@@ -22,14 +24,16 @@
  */
 #include "ssd1306_i2c.h"
 
-/* Private variables */
-static uint32_t ssd1306_I2C_Timeout;
 
-/* Private defines */
-#define I2C_TRANSMITTER_MODE   0
-#define I2C_RECEIVER_MODE      1
-#define I2C_ACK_ENABLE         1
-#define I2C_ACK_DISABLE        0
+#define OLED_I2C_ADDRESS   0x3C
+
+#define WRITE_BIT                          I2C_MASTER_WRITE /*!< I2C master write */
+#define READ_BIT                           I2C_MASTER_READ  /*!< I2C master read */
+#define ACK_CHECK_EN                       0x1              /*!< I2C master will check ack from slave*/
+#define ACK_CHECK_DIS                      0x0              /*!< I2C master will not check ack from slave */
+#define ACK_VAL                            0x0              /*!< I2C ack value */
+#define NACK_VAL                           0x1              /*!< I2C nack value */
+
 
 
 void i2c_master_init()
@@ -49,154 +53,105 @@ void i2c_master_init()
 
 
 
-/*
-void ssd1306_I2C_Init() {
-	GPIO_InitTypeDef gpio;
-	I2C_InitTypeDef i2c;
-
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-
-    i2c.I2C_ClockSpeed = 400000;
-    i2c.I2C_Mode = I2C_Mode_I2C;
-    i2c.I2C_DutyCycle = I2C_DutyCycle_2;
-    i2c.I2C_OwnAddress1 = 0x15;
-    i2c.I2C_Ack = I2C_Ack_Disable;
-    i2c.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-    I2C_Init(I2C1, &i2c);
-
-    gpio.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
-    gpio.GPIO_Mode = GPIO_Mode_AF_OD;
-    gpio.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOB, &gpio);
-
-    // Ну и включаем, собственно, модуль I2C1
-    I2C_Cmd(I2C1, ENABLE);
-}
-*/
-
-
-
-
-void ssd1306_I2C_WriteMulti(I2C_TypeDef* I2Cx, uint8_t address, uint8_t reg, uint8_t* data, uint16_t count) {
+void ssd1306_I2C_WriteMulti(uint8_t reg, uint8_t *data_or_command, size_t size) {
 	uint8_t i;
-	ssd1306_I2C_Start(I2Cx, address, I2C_TRANSMITTER_MODE, I2C_ACK_DISABLE);
-	ssd1306_I2C_WriteData(I2Cx, reg);
-	for (i = 0; i < count; i++) {
-		ssd1306_I2C_WriteData(I2Cx, data[i]);
-	}
-	ssd1306_I2C_Stop(I2Cx);
-}
-
-
-
-
-/* Private functions */
-int16_t ssd1306_I2C_Start(I2C_TypeDef* I2Cx, uint8_t address, uint8_t direction, uint8_t ack) {
-	/* Generate I2C start pulse */
-	I2Cx->CR1 |= I2C_CR1_START;
-	
-	/* Wait till I2C is busy */
-	ssd1306_I2C_Timeout = ssd1306_I2C_TIMEOUT;
-	while (!(I2Cx->SR1 & I2C_SR1_SB)) {
-		if (--ssd1306_I2C_Timeout == 0x00) {
-			return 1;
-		}
-	}
-
-	/* Enable ack if we select it */
-	if (ack) {
-		I2Cx->CR1 |= I2C_CR1_ACK;
-	}
-
-	/* Send write/read bit */
-	if (direction == I2C_TRANSMITTER_MODE) {
-		/* Send address with zero last bit */
-		I2Cx->DR = address & ~I2C_OAR1_ADD0;
-		
-		/* Wait till finished */
-		ssd1306_I2C_Timeout = ssd1306_I2C_TIMEOUT;
-		while (!(I2Cx->SR1 & I2C_SR1_ADDR)) {
-			if (--ssd1306_I2C_Timeout == 0x00) {
-				return 1;
-			}
-		}
-	}
-	if (direction == I2C_RECEIVER_MODE) {
-		/* Send address with 1 last bit */
-		I2Cx->DR = address | I2C_OAR1_ADD0;
-		
-		/* Wait till finished */
-		ssd1306_I2C_Timeout = ssd1306_I2C_TIMEOUT;
-		while (!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED)) {
-			if (--ssd1306_I2C_Timeout == 0x00) {
-				return 1;
-			}
-		}
-	}
-	
-	/* Read status register to clear ADDR flag */
-	I2Cx->SR2;
-	
-	/* Return 0, everything ok */
-	return 0;
-}
-
-void ssd1306_I2C_WriteData(I2C_TypeDef* I2Cx, uint8_t data) {
-	/* Wait till I2C is not busy anymore */
-	ssd1306_I2C_Timeout = ssd1306_I2C_TIMEOUT;
-	while (!(I2Cx->SR1 & I2C_SR1_TXE) && ssd1306_I2C_Timeout) {
-		ssd1306_I2C_Timeout--;
-	}
-
-	/* Send I2C data */
-	I2Cx->DR = data;
-}
-
-void ssd1306_I2C_Write(I2C_TypeDef* I2Cx, uint8_t address, uint8_t reg, uint8_t data) {
-	esp_err_t espRc;
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, true);
-	i2c_master_write_byte(cmd, OLED_CONTROL_BYTE_CMD_SINGLE, true); //one command send
+	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, ACK_CHECK_EN);
+	i2c_master_write_byte(cmd, reg, ACK_CHECK_EN);
+	i2c_master_write(cmd, data_or_command, size, ACK_CHECK_EN);
 	
-	
-	
-	
-	
-	//ssd1306_I2C_Start(I2Cx, address, I2C_TRANSMITTER_MODE, I2C_ACK_DISABLE);
-	ssd1306_I2C_WriteData(I2Cx, reg);
-	ssd1306_I2C_WriteData(I2Cx, data);
-	ssd1306_I2C_Stop(I2Cx);
-}
-
-
-uint8_t ssd1306_I2C_Stop(I2C_TypeDef* I2Cx) {
-	/* Wait till transmitter not empty */
-	ssd1306_I2C_Timeout = ssd1306_I2C_TIMEOUT;
-	while (((!(I2Cx->SR1 & I2C_SR1_TXE)) || (!(I2Cx->SR1 & I2C_SR1_BTF)))) {
-		if (--ssd1306_I2C_Timeout == 0x00) {
-			return 1;
-		}
+	/*
+	for (i = 0; i < count; i++) {
+		i2c_master_write_byte(cmd, data[i], ACK_CHECK_EN);
 	}
-	
-	/* Generate stop */
-	I2Cx->CR1 |= I2C_CR1_STOP;
-	
-	/* Return 0, everything ok */
-	return 0;
+	*/
+	i2c_master_stop(cmd);
+	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
+	i2c_cmd_link_delete(cmd);
+	switch(ret){
+		case ESP_OK:
+			printf("[ssd1306_I2C_WriteMulti()] - OK \n");
+			break;
+		case ESP_ERR_INVALID_ARG:
+			printf("[ssd1306_I2C_WriteMulti()] - Parameter error \n");
+		case ESP_FAIL:
+			printf("[ssd1306_I2C_WriteMulti()] - Sending command error, slave doesn`t ACK the transfer \n");
+		case ESP_ERR_INVALID_STATE:
+			printf("[ssd1306_I2C_WriteMulti()] - i2c driver not installed or not in master mode \n");
+		case ESP_ERR_TIMEOUT:
+			printf("[ssd1306_I2C_WriteMulti()] - Operation timeout because the bus is busy \n");
+		default:
+			printf("[ssd1306_I2C_WriteMulti()] - default block");
+	}
 }
 
-uint8_t ssd1306_I2C_IsDeviceConnected(I2C_TypeDef* I2Cx, uint8_t address) {
+
+
+
+
+
+
+
+void ssd1306_I2C_Write(uint8_t reg, uint8_t data_or_command) {
+	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | I2C_MASTER_WRITE, ACK_CHECK_EN);
+	i2c_master_write_byte(cmd, reg, ACK_CHECK_EN);
+	i2c_master_write_byte(cmd, data_or_command, ACK_CHECK_EN);
+	i2c_master_stop(cmd);
+	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
+	i2c_cmd_link_delete(cmd);
+	switch(ret){
+		case ESP_OK:
+			printf("[ssd1306_I2C_Write()] - OK \n");
+			break;
+		case ESP_ERR_INVALID_ARG:
+			printf("[ssd1306_I2C_Write()] - Parameter error \n");
+		case ESP_FAIL:
+			printf("[ssd1306_I2C_Write()] - Sending command error, slave doesn`t ACK the transfer \n");
+		case ESP_ERR_INVALID_STATE:
+			printf("[ssd1306_I2C_Write()] - i2c driver not installed or not in master mode \n");
+		case ESP_ERR_TIMEOUT:
+			printf("[ssd1306_I2C_Write()] - Operation timeout because the bus is busy \n");
+		default:
+			printf("[ssd1306_I2C_Write()] - default block");
+	}
+}
+
+
+
+
+uint8_t ssd1306_I2C_IsDeviceConnected(void) {
 	uint8_t connected = 0;
 	/* Try to start, function will return 0 in case device will send ACK */
-	if (!ssd1306_I2C_Start(I2Cx, address, I2C_TRANSMITTER_MODE, I2C_ACK_ENABLE)) {
-		connected = 1;
+	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, OLED_I2C_ADDRESS << 1 | WRITE_BIT, ACK_CHECK_EN);
+	//i2c_master_write_byte(cmd, OLED_CMD_DISPLAY_OFF, ACK_CHECK_EN); //OLED_CMD_DISPLAY_OFF
+	i2c_master_stop(cmd);
+	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
+	i2c_cmd_link_delete(cmd);
+	switch(ret){
+		case ESP_OK:
+			printf("[ssd1306_I2C_IsDeviceConnected()] - OLED Display address is true = OK \n");
+			connected = 1;
+			break;
+		case ESP_ERR_INVALID_ARG:
+			printf("[ssd1306_I2C_IsDeviceConnected()] - Parameter error \n");
+			return connected;
+		case ESP_FAIL:
+			printf("[ssd1306_I2C_IsDeviceConnected()] - Sending command error, slave doesn`t ACK the transfer \n");
+			return connected;
+		case ESP_ERR_INVALID_STATE:
+			printf("[ssd1306_I2C_IsDeviceConnected()] - i2c driver not installed or not in master mode \n");
+			return connected;
+		case ESP_ERR_TIMEOUT:
+			printf("[ssd1306_I2C_IsDeviceConnected()] - Operation timeout because the bus is busy \n");
+			return connected;
+		default:
+			printf("[ssd1306_I2C_IsDeviceConnected()] - default block");
+			return connected;
 	}
-
-	/* STOP I2C */
-	ssd1306_I2C_Stop(I2Cx);
-
-	/* Return status */
 	return connected;
 }
