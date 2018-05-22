@@ -58,10 +58,5 @@ void ssd1306_I2C_Write(uint8_t reg, uint8_t data_or_command);
  * @retval None
  */
 void ssd1306_I2C_WriteMulti(uint8_t reg, uint8_t uint8_t *data_or_command, size_t size);
-
-
-
-
-
 #endif
 
