@@ -64,7 +64,7 @@ void i2c_master_init()
 
 
 void ssd1306_I2C_WriteMulti(uint8_t reg, uint8_t *data_or_command, size_t size) {
-	uint8_t i;
+	//uint8_t i;
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (OLED_I2C_ADDRESS << 1) | WRITE_BIT, ACK_CHECK_EN);

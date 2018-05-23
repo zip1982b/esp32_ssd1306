@@ -27,6 +27,8 @@
 #endif
 
 
+#include "fonts.h"
+
 /**
  * @brief  SSD1306 color enumeration
  */

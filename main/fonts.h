@@ -40,9 +40,9 @@ extern C {
  *  - 16 x 26 pixels
 
  */
-#include "stm32f10x.h"
-#include "string.h"
 
+#include "string.h"
+#include <esp_types.h>
 /**
  * @defgroup LIB_Typedefs
  * @brief    Library Typedefs

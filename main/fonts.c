@@ -20,6 +20,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
    ----------------------------------------------------------------------
  */
+
 #include "fonts.h"
 
 const uint16_t Font7x10 [] = {

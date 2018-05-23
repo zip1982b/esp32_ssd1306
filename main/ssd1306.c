@@ -20,7 +20,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
    ----------------------------------------------------------------------
  */
+ 
+//#include <stdio.h>
+
+#include "ssd1306_i2c.h"
+#include "fonts.h"
 #include "ssd1306.h"
+
 
 /* Write command */
 #define SSD1306_WRITECOMMAND(command)      ssd1306_I2C_Write(0x00, (command))

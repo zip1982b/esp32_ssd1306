@@ -33,10 +33,10 @@
 #ifndef ssd1306_I2C_H
 #define ssd1306_I2C_H
 
+#include "driver/i2c.h"
 
 
-
-void ssd1306_I2C_Init();
+void i2c_master_init();
 
 /**
  * @brief  Writes single byte to slave
@@ -57,6 +57,11 @@ void ssd1306_I2C_Write(uint8_t reg, uint8_t data_or_command);
  * @param  size: how many bytes will be written
  * @retval None
  */
-void ssd1306_I2C_WriteMulti(uint8_t reg, uint8_t uint8_t *data_or_command, size_t size);
+void ssd1306_I2C_WriteMulti(uint8_t reg, uint8_t *data_or_command, size_t size);
+
+
+uint8_t ssd1306_I2C_IsDeviceConnected(void);
+
+
 #endif
 
