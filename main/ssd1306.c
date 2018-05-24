@@ -493,3 +493,15 @@ void SSD1306_OFF(void) {
 	SSD1306_WRITECOMMAND(0x10);
 	SSD1306_WRITECOMMAND(0xAE);  
 }
+
+
+void vDisplayMenu(uint8_t countmenu)
+{
+	
+	switch(countmenu)
+	{
+		case 0: {
+			
+		}
+	}
+}

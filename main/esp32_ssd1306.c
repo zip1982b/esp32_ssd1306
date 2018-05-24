@@ -17,6 +17,21 @@ void vDisplay(void *pvParameter)
 	SSD1306_Init();
     
     while(1) {
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		SSD1306_GotoXY(30, 4); // установить курсор в позицию 0 - горизонталь, 44 - вертикаль
 		SSD1306_Puts("Hello, Zhan!", &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
 		SSD1306_DrawCircle(10, 33, 7, SSD1306_COLOR_WHITE); // рисуем белую окружность в позиции 10, 33 и радиус 7 пикселей
