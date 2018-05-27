@@ -141,6 +141,22 @@ void SSD1306_Fill(SSD1306_COLOR_t color) {
 	memset(SSD1306_Buffer, (color == SSD1306_COLOR_BLACK) ? 0x00 : 0xFF, sizeof(SSD1306_Buffer));
 }
 
+
+void Del_str(char *s) {
+	printf("Del_str %s", s);
+	int len = strlen(s);
+	int i;
+	for(i = 0; i <= len; i++)
+	{
+		s[i] = ' ';
+	}
+}
+
+
+
+ 
+
+
 void SSD1306_DrawPixel(uint16_t x, uint16_t y, SSD1306_COLOR_t color) {
 	if (
 		x >= SSD1306_WIDTH ||

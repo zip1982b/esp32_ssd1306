@@ -121,6 +121,9 @@ void SSD1306_ToggleInvert(void);
  */
 void SSD1306_Fill(SSD1306_COLOR_t Color);
 
+
+void Del_str(char *s);
+
 /**
  * @brief  Draws pixel at desired location
  * @note   @ref SSD1306_UpdateScreen() must called after that in order to see updated LCD screen
