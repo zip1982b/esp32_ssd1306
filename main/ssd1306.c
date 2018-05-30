@@ -511,13 +511,167 @@ void SSD1306_OFF(void) {
 }
 
 
-void vDisplayMenu(uint8_t countmenu)
+void vDrawMenu()
 {
-	
-	switch(countmenu)
+	if(page == 1)
 	{
-		case 0: {
-			
+		SSD1306_Fill(SSD1306_COLOR_BLACK);
+		SSD1306_UpdateScreen();
+		SSD1306_GotoXY(15, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
+		SSD1306_Puts("MAIN MENU", &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
+		SSD1306_DrawLine(0, 12, 126, 12, SSD1306_COLOR_WHITE);
+		SSD1306_UpdateScreen();
+	
+	
+		if(menuitem == 1 && frame == 1)
+		{
+			vDisplayMenuItem(menuItem1, 15, 1);
+			vDisplayMenuItem(menuItem2, 25, 0);
+			vDisplayMenuItem(menuItem3, 35, 0);
+		}
+		else if(menuitem == 2 && frame == 1)
+		{
+			vDisplayMenuItem(menuItem1, 15, 0);
+			vDisplayMenuItem(menuItem2, 25, 1);
+			vDisplayMenuItem(menuItem3, 35, 0);
+		}
+		else if(menuitem == 3 && frame == 1)
+		{
+			vDisplayMenuItem(menuItem1, 15, 0);
+			vDisplayMenuItem(menuItem2, 25, 0);
+			vDisplayMenuItem(menuItem3, 35, 1);
+		}
+		else if(menuitem == 4 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 0);
+			vDisplayMenuItem(menuItem3, 25, 0);
+			vDisplayMenuItem(menuItem4, 35, 1);
+		}
+		else if(menuitem == 3 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 0);
+			vDisplayMenuItem(menuItem3, 25, 1);
+			vDisplayMenuItem(menuItem4, 35, 0);
+		}
+		else if(menuitem == 2 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 1);
+			vDisplayMenuItem(menuItem3, 25, 0);
+			vDisplayMenuItem(menuItem4, 35, 0);
+		}
+		else if(menuitem == 5 && frame == 3)
+		{
+			vDisplayMenuItem(menuItem3, 15, 0);
+			vDisplayMenuItem(menuItem4, 25, 0);
+			vDisplayMenuItem(menuItem5, 35, 1);
+		}
+		else if(menuitem == 6 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 0);
+			vDisplayMenuItem(menuItem5, 25, 0);
+			vDisplayMenuItem(menuItem6, 35, 1);
+		}
+		else if(menuitem == 5 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 0);
+			vDisplayMenuItem(menuItem5, 25, 1);
+			vDisplayMenuItem(menuItem6, 35, 0);
+		}
+		else if(menuitem == 4 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 1);
+			vDisplayMenuItem(menuItem5, 25, 0);
+			vDisplayMenuItem(menuItem6, 35, 0);
+		}
+		else if(menuitem == 3 && frame == 3)
+		{
+			vDisplayMenuItem(menuItem3, 15, 1);
+			vDisplayMenuItem(menuItem4, 25, 0);
+			vDisplayMenuItem(menuItem5, 35, 0);
+		}
+		else if(menuitem == 2 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 1);
+			vDisplayMenuItem(menuItem3, 25, 0);
+			vDisplayMenuItem(menuItem4, 35, 0);
+		}
+		else if(menuitem == 4 && frame == 3)
+		{
+			vDisplayMenuItem(menuItem3, 15, 0);
+			vDisplayMenuItem(menuItem4, 25, 1);
+			vDisplayMenuItem(menuItem5, 35, 0);
 		}
 	}
+	else if(page==2 && menuitem == 1)
+		vDisplayIntMenuPage(menuItem1, contrast);
+	else if(page==2 && menuitem == 2)
+		vDisplayIntMenuPage(menuItem1, volume);
+	else if(page==2 && menuitem == 3)
+		vDisplayStringMenuPage(menuItem3, language[selectedLanguage]);
+	else if(page==2 && menuitem == 4)
+		vDisplayStringMenuPage(menuItem4, difficulty[selectedDifficulty]);
+	else if(page==2 && menuitem == 4)
+		vDisplayStringMenuPage(menuItem4, difficulty[selectedDifficulty]);
 }
+
+
+void vDisplayMenuItem(char *item, uint8_t position, uint8_t selected)
+{
+	if(selected)
+	{
+		SSD1306_GotoXY(0, position);
+		SSD1306_Puts(">", &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
+		SSD1306_Puts(*item, &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
+		SSD1306_UpdateScreen();
+	}
+	else
+	{
+		SSD1306_GotoXY(0, position);
+		SSD1306_Puts(">", &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
+		SSD1306_Puts(*item, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
+		SSD1306_UpdateScreen();
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
