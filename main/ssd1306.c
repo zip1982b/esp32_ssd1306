@@ -37,6 +37,9 @@
 
 
 
+extern uint8_t contrast;
+
+
 
 
 
@@ -516,7 +519,11 @@ void SSD1306_OFF(void) {
 }
 
 
-
+void vSetContrast(int contrast) {
+	SSD1306_WRITECOMMAND(0x81);  
+	SSD1306_WRITECOMMAND(contrast);  
+	//SSD1306_WRITECOMMAND(0x);  
+}
 
 
 

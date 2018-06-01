@@ -44,14 +44,14 @@ char menuItem5[] = "Relay1: ON";
 char menuItem6[] = "Reset";
 
 uint8_t backlight = 1;
-uint8_t contrast=60;
-uint8_t volume = 50;
+char contrast=60;
+char volume = 50;
 
 char *language[3] = { "EN", "ES", "EL" };
 int selectedLanguage = 0;
 
 char *difficulty[2] = { "EASY", "HARD" };
-uint8_t selectedDifficulty = 0;
+int selectedDifficulty = 0;
 
 uint8_t up = 0;
 uint8_t down = 0;
@@ -72,9 +72,9 @@ xTaskHandle xDisplay_Handle;
 static xQueueHandle gpio_evt_queue = NULL;
 static xQueueHandle ENC_queue = NULL;
 
-
-
-
+void resetDefaults(void);
+void vDisplayMenuItem(char *item, uint8_t position, uint8_t selected);
+void vDisplayMenuPage(char *menuItem, char *value);
 
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
@@ -101,7 +101,7 @@ static void ENC(void* arg)
 			{
 				rotate = cr;
 				//printf("[ENC]clockwise rotation\n");
-				xStatus = xQueueSendToBack(ENC_queue, &rotate, 0);
+				xStatus = xQueueSendToBack(ENC_queue, &rotate, 100/portTICK_RATE_MS);
 			}
 				
 		}	
@@ -114,7 +114,7 @@ static void ENC(void* arg)
 				rotate = ccr;
 				//printf("[ENC]rotate = %d\n", rotate);
 				//printf("[ENC]counter clockwise rotation\n");
-				xStatus = xQueueSendToBack(ENC_queue, &rotate, 0);
+				xStatus = xQueueSendToBack(ENC_queue, &rotate, 100/portTICK_RATE_MS);
 			}
 				
 		}
@@ -123,7 +123,7 @@ static void ENC(void* arg)
 			rotate = bp;
 			//printf("[ENC]rotate = %d\n", rotate);
 			//printf("[ENC]Button is pressed\n");
-			xStatus = xQueueSendToBack(ENC_queue, &rotate, 0);
+			xStatus = xQueueSendToBack(ENC_queue, &rotate, 100/portTICK_RATE_MS);
 		}
     }
 }
@@ -276,13 +276,13 @@ void vDisplay(void *pvParameter)
 				if (backlight) 
 				{
 					backlight = 0;
-					menuItem5 = "Light: OFF";
+					menuItem5[15] = "Relay1: OFF";
 					turnRelay1_Off();
 				}
 				else 
 				{
 					backlight = 1; 
-					menuItem5 = "Light: ON";
+					menuItem5[15] = "Relay1: ON";
 					turnRelay1_On();
 				}
 			}
@@ -305,12 +305,6 @@ void vDisplay(void *pvParameter)
 }
 
 
-void vSetContrast(int contrast) {
-	SSD1306_WRITECOMMAND(0x81);  
-	SSD1306_WRITECOMMAND(contrast);  
-	//SSD1306_WRITECOMMAND(0x);  
-}
-
 
 
 void resetDefaults(void)
@@ -321,7 +315,7 @@ void resetDefaults(void)
     selectedDifficulty = 0;
     vSetContrast(contrast);
     backlight = 1;
-    menuItem5 = "Relay1: ON";
+    menuItem5[15] = "Relay1: ON";
     turnRelay1_On();
   }
 
@@ -418,9 +412,9 @@ void vDrawMenu(void)
 		}
 	}
 	else if(page==2 && menuitem == 1)
-		vDisplayMenuPage(menuItem1, contrast);
+		vDisplayMenuPage(menuItem1, &contrast);
 	else if(page==2 && menuitem == 2)
-		vDisplayMenuPage(menuItem1, volume);
+		vDisplayMenuPage(menuItem1, &volume);
 	else if(page==2 && menuitem == 3)
 		vDisplayMenuPage(menuItem3, language[selectedLanguage]);
 	else if(page==2 && menuitem == 4)
@@ -438,14 +432,14 @@ void vDisplayMenuItem(char *item, uint8_t position, uint8_t selected)
 	{
 		SSD1306_GotoXY(0, position);
 		SSD1306_Puts(">", &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
-		SSD1306_Puts(*item, &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
+		SSD1306_Puts(item, &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
 		SSD1306_UpdateScreen();
 	}
 	else
 	{
 		SSD1306_GotoXY(0, position);
 		SSD1306_Puts(">", &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
-		SSD1306_Puts(*item, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
+		SSD1306_Puts(item, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
 		SSD1306_UpdateScreen();
 	}
 }
@@ -457,12 +451,12 @@ void vDisplayMenuPage(char *menuitem, char *value)
 	SSD1306_Fill(SSD1306_COLOR_BLACK);
 	//SSD1306_UpdateScreen();
 	SSD1306_GotoXY(15, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
-	SSD1306_Puts(*menuitem, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
+	SSD1306_Puts(menuitem, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
 	SSD1306_DrawLine(0, 12, 126, 12, SSD1306_COLOR_WHITE); // draw line
 	SSD1306_GotoXY(5, 15);
 	SSD1306_Puts("Value", &Font_7x10, SSD1306_COLOR_WHITE);
 	SSD1306_GotoXY(5, 25);
-	SSD1306_Puts(*value, &Font_7x10, SSD1306_COLOR_WHITE);
+	SSD1306_Puts(value, &Font_7x10, SSD1306_COLOR_WHITE);
 	SSD1306_UpdateScreen();
 }
 
@@ -483,7 +477,7 @@ void app_main()
 	gpio_config_t io_conf;
 	//Настройки GPIO для релейного ВЫХОДа
     //disable interrupt - отключитли прерывания
-    io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
+    io_conf.intr_type = GPIO_INTR_DISABLE;
 	
     //set as output mode - установка в режим Выход
     io_conf.mode = GPIO_MODE_OUTPUT;

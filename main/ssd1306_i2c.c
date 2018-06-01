@@ -85,14 +85,18 @@ void ssd1306_I2C_WriteMulti(uint8_t reg, uint8_t *data_or_command, size_t size) 
 			break;
 		case ESP_ERR_INVALID_ARG:
 			printf("[ssd1306_I2C_WriteMulti()] - Parameter error \n");
+			break;
 		case ESP_FAIL:
 			printf("[ssd1306_I2C_WriteMulti()] - Sending command error, slave doesn`t ACK the transfer \n");
+			break;
 		case ESP_ERR_INVALID_STATE:
 			printf("[ssd1306_I2C_WriteMulti()] - i2c driver not installed or not in master mode \n");
+			break;
 		case ESP_ERR_TIMEOUT:
 			printf("[ssd1306_I2C_WriteMulti()] - Operation timeout because the bus is busy \n");
+			break;
 		default:
-			printf("[ssd1306_I2C_WriteMulti()] - default block");
+			printf("[ssd1306_I2C_WriteMulti()] - default block\n");
 	}
 }
 
@@ -118,14 +122,19 @@ void ssd1306_I2C_Write(uint8_t reg, uint8_t data_or_command) {
 			break;
 		case ESP_ERR_INVALID_ARG:
 			printf("[ssd1306_I2C_Write()] - Parameter error \n");
+			break;
 		case ESP_FAIL:
 			printf("[ssd1306_I2C_Write()] - Sending command error, slave doesn`t ACK the transfer \n");
+			break;
 		case ESP_ERR_INVALID_STATE:
 			printf("[ssd1306_I2C_Write()] - i2c driver not installed or not in master mode \n");
+			break;
 		case ESP_ERR_TIMEOUT:
 			printf("[ssd1306_I2C_Write()] - Operation timeout because the bus is busy \n");
+			break;
 		default:
-			printf("[ssd1306_I2C_Write()] - default block");
+			printf("[ssd1306_I2C_Write()] - default block\n");
+			break;
 	}
 }
 
