@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "driver/gpio.h"
-//#include <string.h>
+//#include <char.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <esp_types.h>
+
+
+
 #include "ssd1306.h"
 #include "freertos/queue.h"
 
@@ -26,6 +29,35 @@
 #define GPIO_INPUT_PIN_SEL  ((1ULL<<GPIO_ENC_CLK) | (1ULL<<GPIO_ENC_DT) | (1ULL<<GPIO_ENC_SW)) 
 #define ESP_INTR_FLAG_DEFAULT 0
 
+/* Global */
+uint8_t menuitem = 1;
+uint8_t frame = 1;
+uint8_t page = 1;
+uint8_t lastMenuItem = 1;
+
+
+char menuItem1[] = "Contrast";
+char menuItem2[] = "Volume";
+char menuItem3[] = "Language";
+char menuItem4[] = "Difficulty";
+char menuItem5[] = "Relay1: ON";
+char menuItem6[] = "Reset";
+
+uint8_t backlight = 1;
+uint8_t contrast=60;
+uint8_t volume = 50;
+
+char *language[3] = { "EN", "ES", "EL" };
+int selectedLanguage = 0;
+
+char *difficulty[2] = { "EASY", "HARD" };
+uint8_t selectedDifficulty = 0;
+
+uint8_t up = 0;
+uint8_t down = 0;
+uint8_t middle = 0;
+
+int8_t last, value;
 
 /* 	
 	cr	- clockwise rotation
@@ -39,6 +71,10 @@ xTaskHandle xDisplay_Handle;
 
 static xQueueHandle gpio_evt_queue = NULL;
 static xQueueHandle ENC_queue = NULL;
+
+
+
+
 
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
@@ -102,17 +138,27 @@ void vDisplay(void *pvParameter)
 	SSD1306_Init();
     while(1) {
 		vDrawMenu();
+		
+		// Read Encoder
 		xStatus = xQueueReceive(ENC_queue, &rotate, 0); // portMAX_DELAY - сколь угодно долго
-		if(xStatus)
+		if(xStatus == pdPASS)
 		{
 			printf("[vDisplay]rotate = %d\n", rotate);
+			switch(rotate){
+				case 0: //down
+					down = 1;
+					break;
+				case 1: //up
+					up = 1;
+					break;
+				case 2: //middle - button pressed
+					middle = 1;
+					break;
+			}
 		}
 		
-		
-		/*
-		
 		if (up && page == 1) {
-			up = false;
+			up = 0;
 			if(menuitem == 2 && frame == 2)
 			{
 				frame--;
@@ -133,18 +179,19 @@ void vDisplay(void *pvParameter)
 			}
 		}
 		else if (up && page == 2 && menuitem == 1) {
-			up = false;
+			up = 0;
 			contrast--;
+			vSetContrast(contrast);
 			//setContrast();
 		}
 		else if(up && page == 2 && menuitem == 2)
 		{
-			up = false;
+			up = 0;
 			volume--;
 		}
 		else if(up && page == 2 && menuitem == 3)
 		{
-			up = false;
+			up = 0;
 			selectedLanguage--;
 			if(selectedLanguage == -1)
 			{
@@ -153,7 +200,7 @@ void vDisplay(void *pvParameter)
 		}
 		else if(up && page == 2 && menuitem == 4)
 		{
-			up = false;
+			up = 0;
 			selectedDifficulty--;
 			if(selectedDifficulty == -1)
 			{
@@ -165,7 +212,7 @@ void vDisplay(void *pvParameter)
 		//We have turned the Rotary Encoder Clockwise
 		if(down && page == 1)
 		{
-			down = false;
+			down = 0;
 			if(menuitem == 3 && lastMenuItem == 2)
 			{
 				frame ++;
@@ -180,25 +227,27 @@ void vDisplay(void *pvParameter)
 			}
 			lastMenuItem = menuitem;
 			menuitem++;  
-			if(menuitem==7) 
+			if(menuitem == 7) 
 			{
 				menuitem--;
 			}
 		}
+		
 		else if(down && page == 2 && menuitem == 1)
 		{
-			down = false;
+			down = 0;
 			contrast++;
-			setContrast();
+			vSetContrast(contrast);
 		}
+		
 		else if(down && page == 2 && menuitem == 2)
 		{
-			down = false;
+			down = 0;
 			volume++;
 		}
 		else if(down && page == 2 && menuitem == 3)
 		{
-			down = false;
+			down = 0;
 			selectedLanguage++;
 			if(selectedLanguage == 3)
 			{
@@ -207,7 +256,7 @@ void vDisplay(void *pvParameter)
 		}
 		else if(down && page == 2 && menuitem == 4)
 		{
-			down = false;
+			down = 0;
 			selectedDifficulty++;
 			if(selectedDifficulty == 2)
 			{
@@ -220,21 +269,21 @@ void vDisplay(void *pvParameter)
 		if(middle)
 		{
 			//Middle Button is Pressed
-			middle = false;
+			middle = 0;
 			if (page == 1 && menuitem == 5) // Backlight Control 
 			{
 				
 				if (backlight) 
 				{
-					backlight = false;
+					backlight = 0;
 					menuItem5 = "Light: OFF";
-					turnBacklightOff();
+					turnRelay1_Off();
 				}
 				else 
 				{
-					backlight = true; 
+					backlight = 1; 
 					menuItem5 = "Light: ON";
-					turnBacklightOn();
+					turnRelay1_On();
 				}
 			}
 			if(page == 1 && menuitem == 6)// Reset
@@ -251,30 +300,181 @@ void vDisplay(void *pvParameter)
 				page = 1;
 			}
 		}
-		*/
-		/*
-		char S[13] = "Hello Zhan!*";
-		char *s;
-		s = &S;
-		
-		SSD1306_GotoXY(0, 4); // установить курсор в позицию 0 - горизонталь, 44 - вертикаль
-		SSD1306_Puts(s, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
-		SSD1306_UpdateScreen();
-		vTaskDelay(5000 / portTICK_RATE_MS);
-		
-		
-		Del_str(s);
-		printf("S = %s\n", S);
-		SSD1306_GotoXY(0, 4); // установить курсор в позицию 0 - горизонталь, 44 - вертикаль
-		SSD1306_Puts(s, &Font_7x10, SSD1306_COLOR_WHITE);
-		SSD1306_UpdateScreen();
-		vTaskDelay(5000 / portTICK_RATE_MS);
-		*/
-		
-		
-		
     }
 	vTaskDelete(NULL);
+}
+
+
+void vSetContrast(int contrast) {
+	SSD1306_WRITECOMMAND(0x81);  
+	SSD1306_WRITECOMMAND(contrast);  
+	//SSD1306_WRITECOMMAND(0x);  
+}
+
+
+
+void resetDefaults(void)
+  {
+    contrast = 60;
+    volume = 50;
+    selectedLanguage = 0;
+    selectedDifficulty = 0;
+    vSetContrast(contrast);
+    backlight = 1;
+    menuItem5 = "Relay1: ON";
+    turnRelay1_On();
+  }
+
+
+
+void vDrawMenu(void)
+{
+	if(page == 1)
+	{
+		SSD1306_Fill(SSD1306_COLOR_BLACK);
+		SSD1306_GotoXY(25, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
+		SSD1306_Puts("MAIN MENU", &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
+		SSD1306_DrawLine(10, 12, 110, 12, SSD1306_COLOR_WHITE);
+		SSD1306_UpdateScreen();
+	
+	
+		if(menuitem == 1 && frame == 1)
+		{
+			vDisplayMenuItem(menuItem1, 15, 1);
+			vDisplayMenuItem(menuItem2, 25, 0);
+			vDisplayMenuItem(menuItem3, 35, 0);
+		}
+		else if(menuitem == 2 && frame == 1)
+		{
+			vDisplayMenuItem(menuItem1, 15, 0);
+			vDisplayMenuItem(menuItem2, 25, 1);
+			vDisplayMenuItem(menuItem3, 35, 0);
+		}
+		else if(menuitem == 3 && frame == 1)
+		{
+			vDisplayMenuItem(menuItem1, 15, 0);
+			vDisplayMenuItem(menuItem2, 25, 0);
+			vDisplayMenuItem(menuItem3, 35, 1);
+		}
+		else if(menuitem == 4 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 0);
+			vDisplayMenuItem(menuItem3, 25, 0);
+			vDisplayMenuItem(menuItem4, 35, 1);
+		}
+		else if(menuitem == 3 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 0);
+			vDisplayMenuItem(menuItem3, 25, 1);
+			vDisplayMenuItem(menuItem4, 35, 0);
+		}
+		else if(menuitem == 2 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 1);
+			vDisplayMenuItem(menuItem3, 25, 0);
+			vDisplayMenuItem(menuItem4, 35, 0);
+		}
+		else if(menuitem == 5 && frame == 3)
+		{
+			vDisplayMenuItem(menuItem3, 15, 0);
+			vDisplayMenuItem(menuItem4, 25, 0);
+			vDisplayMenuItem(menuItem5, 35, 1);
+		}
+		else if(menuitem == 6 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 0);
+			vDisplayMenuItem(menuItem5, 25, 0);
+			vDisplayMenuItem(menuItem6, 35, 1);
+		}
+		else if(menuitem == 5 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 0);
+			vDisplayMenuItem(menuItem5, 25, 1);
+			vDisplayMenuItem(menuItem6, 35, 0);
+		}
+		else if(menuitem == 4 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 1);
+			vDisplayMenuItem(menuItem5, 25, 0);
+			vDisplayMenuItem(menuItem6, 35, 0);
+		}
+		else if(menuitem == 3 && frame == 3)
+		{
+			vDisplayMenuItem(menuItem3, 15, 1);
+			vDisplayMenuItem(menuItem4, 25, 0);
+			vDisplayMenuItem(menuItem5, 35, 0);
+		}
+		else if(menuitem == 2 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 1);
+			vDisplayMenuItem(menuItem3, 25, 0);
+			vDisplayMenuItem(menuItem4, 35, 0);
+		}
+		else if(menuitem == 4 && frame == 3)
+		{
+			vDisplayMenuItem(menuItem3, 15, 0);
+			vDisplayMenuItem(menuItem4, 25, 1);
+			vDisplayMenuItem(menuItem5, 35, 0);
+		}
+	}
+	else if(page==2 && menuitem == 1)
+		vDisplayMenuPage(menuItem1, contrast);
+	else if(page==2 && menuitem == 2)
+		vDisplayMenuPage(menuItem1, volume);
+	else if(page==2 && menuitem == 3)
+		vDisplayMenuPage(menuItem3, language[selectedLanguage]);
+	else if(page==2 && menuitem == 4)
+		vDisplayMenuPage(menuItem4, difficulty[selectedDifficulty]);
+	else if(page==2 && menuitem == 4)
+		vDisplayMenuPage(menuItem4, difficulty[selectedDifficulty]);
+	
+	
+}
+
+
+void vDisplayMenuItem(char *item, uint8_t position, uint8_t selected)
+{
+	if(selected)
+	{
+		SSD1306_GotoXY(0, position);
+		SSD1306_Puts(">", &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
+		SSD1306_Puts(*item, &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
+		SSD1306_UpdateScreen();
+	}
+	else
+	{
+		SSD1306_GotoXY(0, position);
+		SSD1306_Puts(">", &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
+		SSD1306_Puts(*item, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
+		SSD1306_UpdateScreen();
+	}
+}
+
+
+
+void vDisplayMenuPage(char *menuitem, char *value)
+{
+	SSD1306_Fill(SSD1306_COLOR_BLACK);
+	//SSD1306_UpdateScreen();
+	SSD1306_GotoXY(15, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
+	SSD1306_Puts(*menuitem, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
+	SSD1306_DrawLine(0, 12, 126, 12, SSD1306_COLOR_WHITE); // draw line
+	SSD1306_GotoXY(5, 15);
+	SSD1306_Puts("Value", &Font_7x10, SSD1306_COLOR_WHITE);
+	SSD1306_GotoXY(5, 25);
+	SSD1306_Puts(*value, &Font_7x10, SSD1306_COLOR_WHITE);
+	SSD1306_UpdateScreen();
+}
+
+
+void turnRelay1_Off(void)
+{
+	gpio_set_level(GPIO_RELAY1, 0);
+}
+
+void turnRelay1_On(void)
+{
+	gpio_set_level(GPIO_RELAY1, 1);
 }
 
 

@@ -238,6 +238,18 @@ void SSD1306_DrawFilledCircle(int16_t x0, int16_t y0, int16_t r, SSD1306_COLOR_t
 void vDrawMenu(void);
 
 
+void vSetContrast(int contrast);
 
+
+void turnRelay1_Off(void);
+
+void turnRelay1_On(void);
+
+
+//void resetDefaults(void);
+
+//void vDisplayMenuItem(char *item, uint8_t position, uint8_t selected);
+
+//void vDisplayMenuPage(char *menuItem, char *value)
 
 #endif /* MAIN_SSD1306_H_ */
