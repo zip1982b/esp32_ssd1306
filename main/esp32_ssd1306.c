@@ -79,8 +79,18 @@ void vDisplayMenuPage(char *menuItem, char *value);
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
     uint32_t gpio_num = (uint32_t) arg;
-	
-    xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);
+	switch(gpio_num){
+		case GPIO_ENC_CLK:
+				gpio_set_intr_type(GPIO_ENC_CLK, GPIO_INTR_DISABLE);
+				break;
+		case GPIO_ENC_DT:
+				gpio_set_intr_type(GPIO_ENC_DT, GPIO_INTR_DISABLE);
+				break;
+		case GPIO_ENC_SW:
+				gpio_set_intr_type(GPIO_ENC_SW, GPIO_INTR_DISABLE);
+				break;
+	}
+    xQueueSendFromISR(gpio_evt_queue, &gpio_num, 0);
 }
 
 
@@ -95,13 +105,16 @@ static void ENC(void* arg)
 		xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY);
 		if(io_num == GPIO_ENC_CLK)
 		{
-			//vTaskDelay(10 / portTICK_RATE_MS);
 			xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY);
+			gpio_set_intr_type(GPIO_ENC_CLK, GPIO_INTR_ANYEDGE); //enable
+			
 			if (io_num == GPIO_ENC_DT)
 			{
 				rotate = cr;
-				//printf("[ENC]clockwise rotation\n");
+				printf("[ENC]clockwise rotation\n");
 				xStatus = xQueueSendToBack(ENC_queue, &rotate, 100/portTICK_RATE_MS);
+				gpio_set_intr_type(GPIO_ENC_DT, GPIO_INTR_ANYEDGE);//enable
+				
 			}
 				
 		}	
@@ -109,12 +122,15 @@ static void ENC(void* arg)
 		{
 			//vTaskDelay(10 / portTICK_RATE_MS);
 			xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY);
+			gpio_set_intr_type(GPIO_ENC_DT, GPIO_INTR_ANYEDGE);
+			
 			if (io_num == GPIO_ENC_CLK)
 			{
 				rotate = ccr;
 				//printf("[ENC]rotate = %d\n", rotate);
-				//printf("[ENC]counter clockwise rotation\n");
+				printf("[ENC]counter clockwise rotation\n");
 				xStatus = xQueueSendToBack(ENC_queue, &rotate, 100/portTICK_RATE_MS);
+				gpio_set_intr_type(GPIO_ENC_CLK, GPIO_INTR_ANYEDGE);
 			}
 				
 		}
@@ -122,8 +138,11 @@ static void ENC(void* arg)
 		{
 			rotate = bp;
 			//printf("[ENC]rotate = %d\n", rotate);
-			//printf("[ENC]Button is pressed\n");
+			printf("[ENC]Button is pressed\n");
+			vTaskDelay(500 / portTICK_RATE_MS);
 			xStatus = xQueueSendToBack(ENC_queue, &rotate, 100/portTICK_RATE_MS);
+			gpio_set_intr_type(GPIO_ENC_SW, GPIO_INTR_NEGEDGE);//enable
+			
 		}
     }
 }
@@ -512,7 +531,7 @@ void app_main()
 	
 	
 	//create a queue to handle gpio event from isr
-    gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+    gpio_evt_queue = xQueueCreate(5, sizeof(uint32_t));
     //start gpio task
     xTaskCreate(ENC, "ENC", 2048, NULL, 10, NULL);
 	

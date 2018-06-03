@@ -81,7 +81,7 @@ void ssd1306_I2C_WriteMulti(uint8_t reg, uint8_t *data_or_command, size_t size) 
 	i2c_cmd_link_delete(cmd);
 	switch(ret){
 		case ESP_OK:
-			printf("[ssd1306_I2C_WriteMulti()] - OK \n");
+			//printf("[ssd1306_I2C_WriteMulti()] - OK \n");
 			break;
 		case ESP_ERR_INVALID_ARG:
 			printf("[ssd1306_I2C_WriteMulti()] - Parameter error \n");
@@ -118,7 +118,7 @@ void ssd1306_I2C_Write(uint8_t reg, uint8_t data_or_command) {
 	i2c_cmd_link_delete(cmd);
 	switch(ret){
 		case ESP_OK:
-			printf("[ssd1306_I2C_Write()] - OK \n");
+			//printf("[ssd1306_I2C_Write()] - OK \n");
 			break;
 		case ESP_ERR_INVALID_ARG:
 			printf("[ssd1306_I2C_Write()] - Parameter error \n");
