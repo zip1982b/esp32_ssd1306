@@ -1,6 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "driver/gpio.h"
-//#include <char.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <esp_types.h>
@@ -40,18 +40,24 @@ char menuItem1[] = "Contrast";
 char menuItem2[] = "Volume";
 char menuItem3[] = "Language";
 char menuItem4[] = "Difficulty";
-char menuItem5[] = "Relay1: ON";
+char menuItem5[] = "Relay1";
 char menuItem6[] = "Reset";
 
-uint8_t backlight = 1;
-char contrast=60;
-char volume = 50;
+
+uint8_t contrast = 100;
+uint8_t volume = 50;
+
 
 char *language[3] = { "EN", "ES", "EL" };
 int selectedLanguage = 0;
 
 char *difficulty[2] = { "EASY", "HARD" };
 int selectedDifficulty = 0;
+
+
+char *Relay1[2] = { "OFF", "ON" };
+int selectedRelay1 = 0;
+
 
 uint8_t up = 0;
 uint8_t down = 0;
@@ -74,7 +80,8 @@ static xQueueHandle ENC_queue = NULL;
 
 void resetDefaults(void);
 void vDisplayMenuItem(char *item, uint8_t position, uint8_t selected);
-void vDisplayMenuPage(char *menuItem, char *value);
+void vDisplayMenuPage(char *menuItem, uint8_t *value);
+void vDisplayCharMenuPage(char *menuitem, char *value);
 
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
@@ -153,16 +160,20 @@ void vDisplay(void *pvParameter)
 {
 	portBASE_TYPE xStatus;
 	enum action rotate;
-	
+	uint8_t change = 1;
 	SSD1306_Init();
     while(1) {
-		vDrawMenu();
-		
-		// Read Encoder
+		if(change)
+		{
+			vDrawMenu();
+			change = 0;
+		}
+	/***** Read Encoder ***********************/
 		xStatus = xQueueReceive(ENC_queue, &rotate, 0); // portMAX_DELAY - сколь угодно долго
 		if(xStatus == pdPASS)
 		{
-			printf("[vDisplay]rotate = %d\n", rotate);
+			change = 1;
+			//printf("[vDisplay]rotate = %d\n", rotate);
 			switch(rotate){
 				case 0: //down
 					down = 1;
@@ -175,21 +186,23 @@ void vDisplay(void *pvParameter)
 					break;
 			}
 		}
-		
 		if (up && page == 1) {
 			up = 0;
 			if(menuitem == 2 && frame == 2)
 			{
 				frame--;
 			}
-			if(menuitem == 4 && frame == 4)
-			{
-				frame--;
-			}
+			
 			if(menuitem == 3 && frame == 3)
 			{
 				frame--;
 			}
+			
+			if(menuitem == 4 && frame == 4)
+			{
+				frame--;
+			}
+			
 			lastMenuItem = menuitem;
 			menuitem--;
 			if (menuitem == 0)
@@ -197,6 +210,9 @@ void vDisplay(void *pvParameter)
 				menuitem = 1;
 			}
 		}
+		
+		
+		
 		else if (up && page == 2 && menuitem == 1) {
 			up = 0;
 			contrast--;
@@ -226,6 +242,16 @@ void vDisplay(void *pvParameter)
 				selectedDifficulty = 1;
 			}
 		}
+		else if(up && page == 2 && menuitem == 5)
+		{
+			up = 0;
+			selectedRelay1--;
+			if(selectedRelay1 <= -1)
+			{
+				selectedRelay1 = 1;
+			}
+		}
+		
 		
 		
 		//We have turned the Rotary Encoder Clockwise
@@ -258,7 +284,6 @@ void vDisplay(void *pvParameter)
 			contrast++;
 			vSetContrast(contrast);
 		}
-		
 		else if(down && page == 2 && menuitem == 2)
 		{
 			down = 0;
@@ -282,35 +307,25 @@ void vDisplay(void *pvParameter)
 				selectedDifficulty = 0;
 			}
 		}
-		
-		
+		else if(down && page == 2 && menuitem == 5)
+		{
+			down = 0;
+			selectedRelay1++;
+			if(selectedRelay1 >= 2)
+			{
+				selectedRelay1 = 0;
+			} 
+		}
 		//Middle Button is Pressed
 		if(middle)
 		{
 			//Middle Button is Pressed
 			middle = 0;
-			if (page == 1 && menuitem == 5) // Backlight Control 
-			{
-				
-				if (backlight) 
-				{
-					backlight = 0;
-					menuItem5[15] = "Relay1: OFF";
-					turnRelay1_Off();
-				}
-				else 
-				{
-					backlight = 1; 
-					menuItem5[15] = "Relay1: ON";
-					turnRelay1_On();
-				}
-			}
 			if(page == 1 && menuitem == 6)// Reset
 			{
 				resetDefaults();
 			}
-			
-			else if(page == 1 && menuitem <= 4)
+			else if(page == 1 && menuitem <= 5) //submenu
 			{
 				page = 2;
 			}
@@ -328,14 +343,13 @@ void vDisplay(void *pvParameter)
 
 void resetDefaults(void)
   {
-    contrast = 60;
+    contrast = 100;
     volume = 50;
     selectedLanguage = 0;
     selectedDifficulty = 0;
     vSetContrast(contrast);
-    backlight = 1;
-    menuItem5[15] = "Relay1: ON";
-    turnRelay1_On();
+	selectedRelay1 = 0;
+    turnRelay1_Off();
   }
 
 
@@ -348,9 +362,9 @@ void vDrawMenu(void)
 		SSD1306_GotoXY(25, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
 		SSD1306_Puts("MAIN MENU", &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
 		SSD1306_DrawLine(10, 12, 110, 12, SSD1306_COLOR_WHITE);
-		SSD1306_UpdateScreen();
+		//SSD1306_UpdateScreen();
 	
-	
+	/*************** Frame 1 ******************************/
 		if(menuitem == 1 && frame == 1)
 		{
 			vDisplayMenuItem(menuItem1, 15, 1);
@@ -369,11 +383,12 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 1);
 		}
-		else if(menuitem == 4 && frame == 2)
+	/************ Frame 2 **********************************/
+		else if(menuitem == 2 && frame == 2)
 		{
-			vDisplayMenuItem(menuItem2, 15, 0);
+			vDisplayMenuItem(menuItem2, 15, 1);
 			vDisplayMenuItem(menuItem3, 25, 0);
-			vDisplayMenuItem(menuItem4, 35, 1);
+			vDisplayMenuItem(menuItem4, 35, 0);
 		}
 		else if(menuitem == 3 && frame == 2)
 		{
@@ -381,47 +396,19 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem3, 25, 1);
 			vDisplayMenuItem(menuItem4, 35, 0);
 		}
-		else if(menuitem == 2 && frame == 2)
+		else if(menuitem == 4 && frame == 2)
 		{
-			vDisplayMenuItem(menuItem2, 15, 1);
+			vDisplayMenuItem(menuItem2, 15, 0);
 			vDisplayMenuItem(menuItem3, 25, 0);
-			vDisplayMenuItem(menuItem4, 35, 0);
+			vDisplayMenuItem(menuItem4, 35, 1);
 		}
-		else if(menuitem == 5 && frame == 3)
-		{
-			vDisplayMenuItem(menuItem3, 15, 0);
-			vDisplayMenuItem(menuItem4, 25, 0);
-			vDisplayMenuItem(menuItem5, 35, 1);
-		}
-		else if(menuitem == 6 && frame == 4)
-		{
-			vDisplayMenuItem(menuItem4, 15, 0);
-			vDisplayMenuItem(menuItem5, 25, 0);
-			vDisplayMenuItem(menuItem6, 35, 1);
-		}
-		else if(menuitem == 5 && frame == 4)
-		{
-			vDisplayMenuItem(menuItem4, 15, 0);
-			vDisplayMenuItem(menuItem5, 25, 1);
-			vDisplayMenuItem(menuItem6, 35, 0);
-		}
-		else if(menuitem == 4 && frame == 4)
-		{
-			vDisplayMenuItem(menuItem4, 15, 1);
-			vDisplayMenuItem(menuItem5, 25, 0);
-			vDisplayMenuItem(menuItem6, 35, 0);
-		}
+	/************* Frame 3 *********************************/
+		
 		else if(menuitem == 3 && frame == 3)
 		{
 			vDisplayMenuItem(menuItem3, 15, 1);
 			vDisplayMenuItem(menuItem4, 25, 0);
 			vDisplayMenuItem(menuItem5, 35, 0);
-		}
-		else if(menuitem == 2 && frame == 2)
-		{
-			vDisplayMenuItem(menuItem2, 15, 1);
-			vDisplayMenuItem(menuItem3, 25, 0);
-			vDisplayMenuItem(menuItem4, 35, 0);
 		}
 		else if(menuitem == 4 && frame == 3)
 		{
@@ -429,19 +416,59 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem4, 25, 1);
 			vDisplayMenuItem(menuItem5, 35, 0);
 		}
+		else if(menuitem == 5 && frame == 3)
+		{
+			vDisplayMenuItem(menuItem3, 15, 0);
+			vDisplayMenuItem(menuItem4, 25, 0);
+			vDisplayMenuItem(menuItem5, 35, 1);
+		}
+	/*************** Frame 4 *******************************/
+		else if(menuitem == 4 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 1);
+			vDisplayMenuItem(menuItem5, 25, 0);
+			vDisplayMenuItem(menuItem6, 35, 0);
+		}
+		else if(menuitem == 5 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 0);
+			vDisplayMenuItem(menuItem5, 25, 1);
+			vDisplayMenuItem(menuItem6, 35, 0);
+		}
+		else if(menuitem == 6 && frame == 4)
+		{
+			vDisplayMenuItem(menuItem4, 15, 0);
+			vDisplayMenuItem(menuItem5, 25, 0);
+			vDisplayMenuItem(menuItem6, 35, 1);
+		}
+	/***************** End Frame *****************************/
 	}
+	/***************** Page 1 end ***************************/
+	
+	/*****************  Page 2 ******************************/
 	else if(page==2 && menuitem == 1)
 		vDisplayMenuPage(menuItem1, &contrast);
+	
+	
 	else if(page==2 && menuitem == 2)
-		vDisplayMenuPage(menuItem1, &volume);
+		vDisplayMenuPage(menuItem2, &volume);
+	
+	
 	else if(page==2 && menuitem == 3)
-		vDisplayMenuPage(menuItem3, language[selectedLanguage]);
-	else if(page==2 && menuitem == 4)
-		vDisplayMenuPage(menuItem4, difficulty[selectedDifficulty]);
-	else if(page==2 && menuitem == 4)
-		vDisplayMenuPage(menuItem4, difficulty[selectedDifficulty]);
+		vDisplayCharMenuPage(menuItem3, language[selectedLanguage]);
 	
 	
+	else if(page==2 && menuitem == 4)
+		vDisplayCharMenuPage(menuItem4, difficulty[selectedDifficulty]);
+	
+	
+	else if(page==2 && menuitem == 5)
+		vDisplayCharMenuPage(menuItem5, Relay1[selectedRelay1]);
+		if(selectedRelay1 == 1)
+			turnRelay1_On();
+		else if(selectedRelay1 == 0)
+			turnRelay1_Off();
+			
 }
 
 
@@ -452,26 +479,47 @@ void vDisplayMenuItem(char *item, uint8_t position, uint8_t selected)
 		SSD1306_GotoXY(0, position);
 		SSD1306_Puts(">", &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
 		SSD1306_Puts(item, &Font_7x10, SSD1306_COLOR_BLACK); // шрифт Font_7x10, цвет чёрным
-		SSD1306_UpdateScreen();
+		//SSD1306_UpdateScreen();
 	}
 	else
 	{
 		SSD1306_GotoXY(0, position);
 		SSD1306_Puts(">", &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
 		SSD1306_Puts(item, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
-		SSD1306_UpdateScreen();
+		//SSD1306_UpdateScreen();
 	}
+	SSD1306_UpdateScreen();
 }
 
 
 
-void vDisplayMenuPage(char *menuitem, char *value)
+void vDisplayMenuPage(char *menuitem, uint8_t *value)
 {
 	SSD1306_Fill(SSD1306_COLOR_BLACK);
 	//SSD1306_UpdateScreen();
-	SSD1306_GotoXY(15, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
+	SSD1306_GotoXY(25, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
 	SSD1306_Puts(menuitem, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
-	SSD1306_DrawLine(0, 12, 126, 12, SSD1306_COLOR_WHITE); // draw line
+	SSD1306_DrawLine(10, 12, 110, 12, SSD1306_COLOR_WHITE); // draw line
+	SSD1306_GotoXY(5, 15);
+	SSD1306_Puts("Value", &Font_7x10, SSD1306_COLOR_WHITE);
+	SSD1306_GotoXY(5, 25);
+	char v[24];
+	itoa(*value, v, 10);
+	//printf("v = %s\n", v);
+	SSD1306_Puts(v, &Font_7x10, SSD1306_COLOR_WHITE);
+	SSD1306_UpdateScreen();
+}
+
+
+
+
+void vDisplayCharMenuPage(char *menuitem, char *value)
+{
+	SSD1306_Fill(SSD1306_COLOR_BLACK);
+	//SSD1306_UpdateScreen();
+	SSD1306_GotoXY(25, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
+	SSD1306_Puts(menuitem, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
+	SSD1306_DrawLine(10, 12, 110, 12, SSD1306_COLOR_WHITE); // draw line
 	SSD1306_GotoXY(5, 15);
 	SSD1306_Puts("Value", &Font_7x10, SSD1306_COLOR_WHITE);
 	SSD1306_GotoXY(5, 25);
@@ -493,6 +541,8 @@ void turnRelay1_On(void)
 
 void app_main()
 {
+	
+	
 	gpio_config_t io_conf;
 	//Настройки GPIO для релейного ВЫХОДа
     //disable interrupt - отключитли прерывания
@@ -533,7 +583,7 @@ void app_main()
 	//create a queue to handle gpio event from isr
     gpio_evt_queue = xQueueCreate(5, sizeof(uint32_t));
     //start gpio task
-    xTaskCreate(ENC, "ENC", 2048, NULL, 10, NULL);
+    xTaskCreate(ENC, "ENC", 1548, NULL, 10, NULL);
 	
 	ENC_queue = xQueueCreate(10, sizeof(uint32_t));
 	

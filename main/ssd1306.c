@@ -519,7 +519,7 @@ void SSD1306_OFF(void) {
 }
 
 
-void vSetContrast(int contrast) {
+void vSetContrast(uint8_t contrast) {
 	SSD1306_WRITECOMMAND(0x81);  
 	SSD1306_WRITECOMMAND(contrast);  
 	//SSD1306_WRITECOMMAND(0x);  
