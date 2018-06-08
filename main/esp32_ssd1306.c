@@ -186,6 +186,8 @@ void vDisplay(void *pvParameter)
 					break;
 			}
 		}
+	/***** End Read Encoder ***********************/	
+		
 		if (up && page == 1) {
 			up = 0;
 			if(menuitem == 2 && frame == 2)
@@ -197,12 +199,12 @@ void vDisplay(void *pvParameter)
 			{
 				frame--;
 			}
-			
+			/*
 			if(menuitem == 4 && frame == 4)
 			{
 				frame--;
 			}
-			
+			*/
 			lastMenuItem = menuitem;
 			menuitem--;
 			if (menuitem == 0)
@@ -248,7 +250,7 @@ void vDisplay(void *pvParameter)
 			selectedRelay1--;
 			if(selectedRelay1 <= -1)
 			{
-				selectedRelay1 = 1;
+				selectedRelay1 = 1; 
 			}
 		}
 		
@@ -258,15 +260,15 @@ void vDisplay(void *pvParameter)
 		if(down && page == 1)
 		{
 			down = 0;
-			if(menuitem == 3 && lastMenuItem == 2)
+			if(menuitem == 4 && lastMenuItem == 3)
 			{
 				frame ++;
 			}
-			else if(menuitem == 4 && lastMenuItem == 3)
+			else if(menuitem == 5 && lastMenuItem == 4)
 			{
 				frame ++;
 			}
-			else if(menuitem == 5 && lastMenuItem == 4 && frame != 4)
+			else if(menuitem == 6 && lastMenuItem == 5 && frame != 3)
 			{
 				frame ++;
 			}
@@ -278,7 +280,10 @@ void vDisplay(void *pvParameter)
 			}
 		}
 		
-		else if(down && page == 2 && menuitem == 1)
+		
+		
+		
+		else if(down && page == 2 && menuitem == 1) 
 		{
 			down = 0;
 			contrast++;
@@ -370,18 +375,28 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem1, 15, 1);
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 0);
+			vDisplayMenuItem(menuItem4, 45, 0);
 		}
 		else if(menuitem == 2 && frame == 1)
 		{
 			vDisplayMenuItem(menuItem1, 15, 0);
 			vDisplayMenuItem(menuItem2, 25, 1);
 			vDisplayMenuItem(menuItem3, 35, 0);
+			vDisplayMenuItem(menuItem4, 45, 0);
 		}
 		else if(menuitem == 3 && frame == 1)
 		{
 			vDisplayMenuItem(menuItem1, 15, 0);
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 1);
+			vDisplayMenuItem(menuItem4, 45, 0);
+		}
+		else if(menuitem == 4 && frame == 1)
+		{
+			vDisplayMenuItem(menuItem1, 15, 0);
+			vDisplayMenuItem(menuItem2, 25, 0);
+			vDisplayMenuItem(menuItem3, 35, 0);
+			vDisplayMenuItem(menuItem4, 45, 1);
 		}
 	/************ Frame 2 **********************************/
 		else if(menuitem == 2 && frame == 2)
@@ -389,58 +404,59 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem2, 15, 1);
 			vDisplayMenuItem(menuItem3, 25, 0);
 			vDisplayMenuItem(menuItem4, 35, 0);
+			vDisplayMenuItem(menuItem5, 45, 0);
 		}
 		else if(menuitem == 3 && frame == 2)
 		{
 			vDisplayMenuItem(menuItem2, 15, 0);
 			vDisplayMenuItem(menuItem3, 25, 1);
 			vDisplayMenuItem(menuItem4, 35, 0);
+			vDisplayMenuItem(menuItem5, 45, 0);
 		}
 		else if(menuitem == 4 && frame == 2)
 		{
 			vDisplayMenuItem(menuItem2, 15, 0);
 			vDisplayMenuItem(menuItem3, 25, 0);
 			vDisplayMenuItem(menuItem4, 35, 1);
+			vDisplayMenuItem(menuItem5, 45, 0);
+		}
+		else if(menuitem == 5 && frame == 2)
+		{
+			vDisplayMenuItem(menuItem2, 15, 0);
+			vDisplayMenuItem(menuItem3, 25, 0);
+			vDisplayMenuItem(menuItem4, 35, 0);
+			vDisplayMenuItem(menuItem5, 45, 1);
 		}
 	/************* Frame 3 *********************************/
-		
 		else if(menuitem == 3 && frame == 3)
 		{
 			vDisplayMenuItem(menuItem3, 15, 1);
 			vDisplayMenuItem(menuItem4, 25, 0);
 			vDisplayMenuItem(menuItem5, 35, 0);
+			vDisplayMenuItem(menuItem6, 45, 0);
 		}
 		else if(menuitem == 4 && frame == 3)
 		{
 			vDisplayMenuItem(menuItem3, 15, 0);
 			vDisplayMenuItem(menuItem4, 25, 1);
 			vDisplayMenuItem(menuItem5, 35, 0);
+			vDisplayMenuItem(menuItem6, 45, 0);
 		}
 		else if(menuitem == 5 && frame == 3)
 		{
 			vDisplayMenuItem(menuItem3, 15, 0);
 			vDisplayMenuItem(menuItem4, 25, 0);
 			vDisplayMenuItem(menuItem5, 35, 1);
+			vDisplayMenuItem(menuItem6, 45, 0);
 		}
-	/*************** Frame 4 *******************************/
-		else if(menuitem == 4 && frame == 4)
+		else if(menuitem == 6 && frame == 3)
 		{
-			vDisplayMenuItem(menuItem4, 15, 1);
-			vDisplayMenuItem(menuItem5, 25, 0);
-			vDisplayMenuItem(menuItem6, 35, 0);
+			vDisplayMenuItem(menuItem3, 15, 0);
+			vDisplayMenuItem(menuItem4, 25, 0);
+			vDisplayMenuItem(menuItem5, 35, 0);
+			vDisplayMenuItem(menuItem6, 45, 1);
 		}
-		else if(menuitem == 5 && frame == 4)
-		{
-			vDisplayMenuItem(menuItem4, 15, 0);
-			vDisplayMenuItem(menuItem5, 25, 1);
-			vDisplayMenuItem(menuItem6, 35, 0);
-		}
-		else if(menuitem == 6 && frame == 4)
-		{
-			vDisplayMenuItem(menuItem4, 15, 0);
-			vDisplayMenuItem(menuItem5, 25, 0);
-			vDisplayMenuItem(menuItem6, 35, 1);
-		}
+	
 	/***************** End Frame *****************************/
 	}
 	/***************** Page 1 end ***************************/
@@ -583,7 +599,7 @@ void app_main()
 	//create a queue to handle gpio event from isr
     gpio_evt_queue = xQueueCreate(5, sizeof(uint32_t));
     //start gpio task
-    xTaskCreate(ENC, "ENC", 1548, NULL, 10, NULL);
+    xTaskCreate(ENC, "ENC", 1548, NULL, 11, NULL);
 	
 	ENC_queue = xQueueCreate(10, sizeof(uint32_t));
 	
