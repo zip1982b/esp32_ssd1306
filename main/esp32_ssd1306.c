@@ -109,12 +109,12 @@ static void ENC(void* arg)
 	portBASE_TYPE xStatus;
     uint32_t io_num;
     for(;;) {
+		io_num = 0;
 		xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY);
 		if(io_num == GPIO_ENC_CLK)
 		{
-			xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY);
+			xQueueReceive(gpio_evt_queue, &io_num, 100/portTICK_RATE_MS);
 			gpio_set_intr_type(GPIO_ENC_CLK, GPIO_INTR_ANYEDGE); //enable
-			
 			if (io_num == GPIO_ENC_DT)
 			{
 				rotate = cr;
@@ -128,7 +128,7 @@ static void ENC(void* arg)
 		else if(io_num == GPIO_ENC_DT)
 		{
 			//vTaskDelay(10 / portTICK_RATE_MS);
-			xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY);
+			xQueueReceive(gpio_evt_queue, &io_num, 100/portTICK_RATE_MS);
 			gpio_set_intr_type(GPIO_ENC_DT, GPIO_INTR_ANYEDGE);
 			
 			if (io_num == GPIO_ENC_CLK)
@@ -168,12 +168,15 @@ void vDisplay(void *pvParameter)
 			vDrawMenu();
 			change = 0;
 		}
+		
+		
+		
 	/***** Read Encoder ***********************/
-		xStatus = xQueueReceive(ENC_queue, &rotate, 0); // portMAX_DELAY - сколь угодно долго
+		xStatus = xQueueReceive(ENC_queue, &rotate, 100/portTICK_RATE_MS); // portMAX_DELAY - сколь угодно долго
 		if(xStatus == pdPASS)
 		{
 			change = 1;
-			//printf("[vDisplay]rotate = %d\n", rotate);
+			printf("[vDisplay]rotate = %d\n", rotate);
 			switch(rotate){
 				case 0: //down
 					down = 1;
@@ -188,6 +191,12 @@ void vDisplay(void *pvParameter)
 		}
 	/***** End Read Encoder ***********************/	
 		
+		
+		
+		
+		
+		/*
+		
 		if (up && page == 1) {
 			up = 0;
 			if(menuitem == 2 && frame == 2)
@@ -199,12 +208,6 @@ void vDisplay(void *pvParameter)
 			{
 				frame--;
 			}
-			/*
-			if(menuitem == 4 && frame == 4)
-			{
-				frame--;
-			}
-			*/
 			lastMenuItem = menuitem;
 			menuitem--;
 			if (menuitem == 0)
@@ -212,7 +215,7 @@ void vDisplay(void *pvParameter)
 				menuitem = 1;
 			}
 		}
-		
+		*/
 		
 		
 		else if (up && page == 2 && menuitem == 1) {
@@ -233,6 +236,7 @@ void vDisplay(void *pvParameter)
 			if(selectedLanguage == -1)
 			{
 				selectedLanguage = 2;
+				
 			}
 		}
 		else if(up && page == 2 && menuitem == 4)
@@ -264,11 +268,7 @@ void vDisplay(void *pvParameter)
 			{
 				frame ++;
 			}
-			else if(menuitem == 5 && lastMenuItem == 4)
-			{
-				frame ++;
-			}
-			else if(menuitem == 6 && lastMenuItem == 5 && frame != 3)
+			else if(menuitem == 5 && lastMenuItem == 4 && frame != 3)
 			{
 				frame ++;
 			}
@@ -483,8 +483,7 @@ void vDrawMenu(void)
 		if(selectedRelay1 == 1)
 			turnRelay1_On();
 		else if(selectedRelay1 == 0)
-			turnRelay1_Off();
-			
+			turnRelay1_Off();	
 }
 
 
@@ -599,7 +598,7 @@ void app_main()
 	//create a queue to handle gpio event from isr
     gpio_evt_queue = xQueueCreate(5, sizeof(uint32_t));
     //start gpio task
-    xTaskCreate(ENC, "ENC", 1548, NULL, 11, NULL);
+    xTaskCreate(ENC, "ENC", 1548, NULL, 10, NULL);
 	
 	ENC_queue = xQueueCreate(10, sizeof(uint32_t));
 	
