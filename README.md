@@ -14,14 +14,11 @@ Hardware:
 Connections:
 * Relay 1,2 - GPIO14, GPIO12
 * encoder clk - GPIO33, DT - GPIO25, SW - GPIO26
-* OLED DISPLAY ------------------------------
-   SSD1306    |ESP32        |DESCRIPTION
-
-   VCC        |3.3V         |
-   GND        |GND          |
-   SCL        |19           |Serial clock line
-   SDA        |18           |Serial data line
-----------------------------------------------
+* OLED DISPLAY 
+  SSD1306 VCC - 3.3v 
+  SSD1306 GND
+  SSD1306 SCL - GPIO19
+  SSD1306 SDA - GPIO18
 
 
 
