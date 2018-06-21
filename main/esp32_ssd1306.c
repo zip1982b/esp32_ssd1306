@@ -195,7 +195,7 @@ void vDisplay(void *pvParameter)
 		
 		
 		
-		/*
+		
 		
 		if (up && page == 1) {
 			up = 0;
@@ -215,7 +215,7 @@ void vDisplay(void *pvParameter)
 				menuitem = 1;
 			}
 		}
-		*/
+		
 		
 		
 		else if (up && page == 2 && menuitem == 1) {
