@@ -1,8 +1,8 @@
-Project name: esp32_ssd1306
+Project name: esp32_ssd1306.
 This project is based on Espressif IoT Development Framework (esp-idf).
 
 
-![alt text](img/oled128x64.jpg "my first termostat :)")
+
 ![alt text](img/oled128x64.png "my first termostat :)")
 Hardware:
 * esp32
