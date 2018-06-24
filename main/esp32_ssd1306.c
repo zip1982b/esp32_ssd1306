@@ -162,12 +162,20 @@ void vDisplay(void *pvParameter)
 	enum action rotate;
 	uint8_t change = 1;
 	SSD1306_Init();
+	
+	//uint8_t Frame = 1;
+	
+	
     while(1) {
+		down = 0;
+		up = 0;
+		
 		if(change)
 		{
 			vDrawMenu();
 			change = 0;
 		}
+		
 		
 		
 		
@@ -192,10 +200,33 @@ void vDisplay(void *pvParameter)
 	/***** End Read Encoder ***********************/	
 		
 		
+		switch(frame){
+			case 1:
+				if(down){ menuitem++;}
+				if(menuitem > 4){ frame = 2; }
+				
+				if(up) { menuitem--; }
+				if(menuitem == 0) { menuitem = 1; }
+				
+				break;
+			case 2:
+				if(down) { menuitem++; }
+				if(menuitem > 5){ frame = 3; }
+				
+				if(up) { menuitem--; }
+				if(menuitem < 2) { frame = 1; }
+				break;
+			case 3:
+				if(up) { menuitem--; }
+				if(menuitem < 3) { frame = 2;}
+				
+				if(down) { menuitem++; }
+				if(menuitem == 7) { menuitem = 6; }
+				break;
+		}
 		
 		
-		
-		
+		/*
 		
 		if (up && page == 1) {
 			up = 0;
@@ -339,6 +370,7 @@ void vDisplay(void *pvParameter)
 				page = 1;
 			}
 		}
+		*/
     }
 	vTaskDelete(NULL);
 }
