@@ -31,7 +31,7 @@
 
 /* Global */
 uint8_t menuitem = 1;
-uint8_t frame = 1;
+uint8_t state = 10;
 uint8_t page = 1;
 uint8_t lastMenuItem = 1;
 
@@ -163,24 +163,21 @@ void vDisplay(void *pvParameter)
 	uint8_t change = 1;
 	SSD1306_Init();
 	
-	//uint8_t Frame = 1;
+	uint8_t frame = 1;
 	
 	
     while(1) {
 		down = 0;
 		up = 0;
+		middle = 0;
 		
 		if(change)
 		{
 			vDrawMenu();
 			change = 0;
 		}
-		
-		
-		
-		
 	/***** Read Encoder ***********************/
-		xStatus = xQueueReceive(ENC_queue, &rotate, 100/portTICK_RATE_MS); // portMAX_DELAY - сколь угодно долго
+		xStatus = xQueueReceive(ENC_queue, &rotate, 100/portTICK_RATE_MS); // portMAX_DELAY - (very long time) сколь угодно долго
 		if(xStatus == pdPASS)
 		{
 			change = 1;
@@ -200,177 +197,103 @@ void vDisplay(void *pvParameter)
 	/***** End Read Encoder ***********************/	
 		
 		
-		switch(frame){
-			case 1:
+		switch(state){
+			case 10:
+				frame = 1;
 				if(down){ menuitem++;}
-				if(menuitem > 4){ frame = 2; }
-				
 				if(up) { menuitem--; }
 				if(menuitem == 0) { menuitem = 1; }
-				
+				if(menuitem > 4){
+					state = 20;
+					frame = 2;
+				}
+				//Contrast
+				if(middle && menuitem == 1){
+					state = 1;
+				}
+				//Volume
+				if(middle && menuitem == 2){
+					state = 2;
+				}
+				//Language
+				if(middle && menuitem == 3){
+					state = 3;
+				}
+				//Difficulty
+				if(middle && menuitem == 4){
+					state = 4;
+				}
 				break;
-			case 2:
+			case 20:
 				if(down) { menuitem++; }
-				if(menuitem > 5){ frame = 3; }
+				if(menuitem > 5){ state = 30; }
 				
 				if(up) { menuitem--; }
-				if(menuitem < 2) { frame = 1; }
+				if(menuitem < 2) { state = 10; }
 				break;
-			case 3:
+			case 30:
 				if(up) { menuitem--; }
-				if(menuitem < 3) { frame = 2;}
+				if(menuitem < 3) { state = 20; }
 				
 				if(down) { menuitem++; }
 				if(menuitem == 7) { menuitem = 6; }
+				
+				if(middle && menuitem == 6) { resetDefaults(); }
+				
+				break;
+			case 1:
+				if(down){
+					contrast++;
+					vSetContrast(contrast);
+				}
+				else if(up){
+					contrast--;
+					vSetContrast(contrast);
+				}
+				else if(middle && frame == 1){ state = 10; }
+				break;
+				
+			case 2:
+				if(down){ volume++; }
+				else if(up){ volume--; }
+				else if(middle){ state = 10; }
+				break;
+				
+			case 3:
+				if(down){ volume++; }
+				else if(up){ volume--; }
+				else if(middle){ state = 10; }
+				break;
+				
+			case 4:
+				if(down){ volume++; }
+				else if(up){ volume--; }
+				else if(middle){ state = 10; }
+				break;
+				
+			case 5:
+				if(down){ volume++; }
+				else if(up){ volume--; }
+				else if(middle){ state = 10; }
 				break;
 		}
 		
 		
-		/*
-		
-		if (up && page == 1) {
-			up = 0;
-			if(menuitem == 2 && frame == 2)
-			{
-				frame--;
-			}
-			
-			if(menuitem == 3 && frame == 3)
-			{
-				frame--;
-			}
-			lastMenuItem = menuitem;
-			menuitem--;
-			if (menuitem == 0)
-			{
-				menuitem = 1;
-			}
-		}
-		
-		
-		
-		else if (up && page == 2 && menuitem == 1) {
-			up = 0;
-			contrast--;
-			vSetContrast(contrast);
-			//setContrast();
-		}
-		else if(up && page == 2 && menuitem == 2)
-		{
-			up = 0;
-			volume--;
-		}
-		else if(up && page == 2 && menuitem == 3)
-		{
-			up = 0;
-			selectedLanguage--;
-			if(selectedLanguage == -1)
-			{
-				selectedLanguage = 2;
-				
-			}
-		}
-		else if(up && page == 2 && menuitem == 4)
-		{
-			up = 0;
-			selectedDifficulty--;
-			if(selectedDifficulty == -1)
-			{
-				selectedDifficulty = 1;
-			}
-		}
-		else if(up && page == 2 && menuitem == 5)
-		{
-			up = 0;
-			selectedRelay1--;
-			if(selectedRelay1 <= -1)
-			{
-				selectedRelay1 = 1; 
-			}
-		}
-		
-		
-		
-		//We have turned the Rotary Encoder Clockwise
-		if(down && page == 1)
-		{
-			down = 0;
-			if(menuitem == 4 && lastMenuItem == 3)
-			{
-				frame ++;
-			}
-			else if(menuitem == 5 && lastMenuItem == 4 && frame != 3)
-			{
-				frame ++;
-			}
-			lastMenuItem = menuitem;
-			menuitem++;  
-			if(menuitem == 7) 
-			{
-				menuitem--;
-			}
-		}
 		
 		
 		
 		
-		else if(down && page == 2 && menuitem == 1) 
-		{
-			down = 0;
-			contrast++;
-			vSetContrast(contrast);
-		}
-		else if(down && page == 2 && menuitem == 2)
-		{
-			down = 0;
-			volume++;
-		}
-		else if(down && page == 2 && menuitem == 3)
-		{
-			down = 0;
-			selectedLanguage++;
-			if(selectedLanguage == 3)
-			{
-				selectedLanguage = 0;
-			}
-		}
-		else if(down && page == 2 && menuitem == 4)
-		{
-			down = 0;
-			selectedDifficulty++;
-			if(selectedDifficulty == 2)
-			{
-				selectedDifficulty = 0;
-			}
-		}
-		else if(down && page == 2 && menuitem == 5)
-		{
-			down = 0;
-			selectedRelay1++;
-			if(selectedRelay1 >= 2)
-			{
-				selectedRelay1 = 0;
-			} 
-		}
-		//Middle Button is Pressed
-		if(middle)
-		{
-			//Middle Button is Pressed
-			middle = 0;
-			if(page == 1 && menuitem == 6)// Reset
-			{
-				resetDefaults();
-			}
-			else if(page == 1 && menuitem <= 5) //submenu
-			{
-				page = 2;
-			}
-			else if(page == 2)
-			{
-				page = 1;
-			}
-		}
-		*/
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
     }
 	vTaskDelete(NULL);
 }
@@ -393,7 +316,7 @@ void resetDefaults(void)
 
 void vDrawMenu(void)
 {
-	if(page == 1)
+	if(state > 5)
 	{
 		SSD1306_Fill(SSD1306_COLOR_BLACK);
 		SSD1306_GotoXY(25, 0); // установить курсор в позицию 15 - горизонталь, 0 - вертикаль
@@ -401,87 +324,87 @@ void vDrawMenu(void)
 		SSD1306_DrawLine(10, 12, 110, 12, SSD1306_COLOR_WHITE);
 		//SSD1306_UpdateScreen();
 	
-	/*************** Frame 1 ******************************/
-		if(menuitem == 1 && frame == 1)
+	/*************** state 1 ******************************/
+		if(menuitem == 1 && state == 10)
 		{
 			vDisplayMenuItem(menuItem1, 15, 1);
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 0);
 		}
-		else if(menuitem == 2 && frame == 1)
+		else if(menuitem == 2 && state == 10)
 		{
 			vDisplayMenuItem(menuItem1, 15, 0);
 			vDisplayMenuItem(menuItem2, 25, 1);
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 0);
 		}
-		else if(menuitem == 3 && frame == 1)
+		else if(menuitem == 3 && state == 10)
 		{
 			vDisplayMenuItem(menuItem1, 15, 0);
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 1);
 			vDisplayMenuItem(menuItem4, 45, 0);
 		}
-		else if(menuitem == 4 && frame == 1)
+		else if(menuitem == 4 && state == 10)
 		{
 			vDisplayMenuItem(menuItem1, 15, 0);
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 1);
 		}
-	/************ Frame 2 **********************************/
-		else if(menuitem == 2 && frame == 2)
+	/************ state 2 **********************************/
+		else if(menuitem == 2 && state == 20)
 		{
 			vDisplayMenuItem(menuItem2, 15, 1);
 			vDisplayMenuItem(menuItem3, 25, 0);
 			vDisplayMenuItem(menuItem4, 35, 0);
 			vDisplayMenuItem(menuItem5, 45, 0);
 		}
-		else if(menuitem == 3 && frame == 2)
+		else if(menuitem == 3 && state == 20)
 		{
 			vDisplayMenuItem(menuItem2, 15, 0);
 			vDisplayMenuItem(menuItem3, 25, 1);
 			vDisplayMenuItem(menuItem4, 35, 0);
 			vDisplayMenuItem(menuItem5, 45, 0);
 		}
-		else if(menuitem == 4 && frame == 2)
+		else if(menuitem == 4 && state == 20)
 		{
 			vDisplayMenuItem(menuItem2, 15, 0);
 			vDisplayMenuItem(menuItem3, 25, 0);
 			vDisplayMenuItem(menuItem4, 35, 1);
 			vDisplayMenuItem(menuItem5, 45, 0);
 		}
-		else if(menuitem == 5 && frame == 2)
+		else if(menuitem == 5 && state == 20)
 		{
 			vDisplayMenuItem(menuItem2, 15, 0);
 			vDisplayMenuItem(menuItem3, 25, 0);
 			vDisplayMenuItem(menuItem4, 35, 0);
 			vDisplayMenuItem(menuItem5, 45, 1);
 		}
-	/************* Frame 3 *********************************/
-		else if(menuitem == 3 && frame == 3)
+	/************* state 3 *********************************/
+		else if(menuitem == 3 && state == 30)
 		{
 			vDisplayMenuItem(menuItem3, 15, 1);
 			vDisplayMenuItem(menuItem4, 25, 0);
 			vDisplayMenuItem(menuItem5, 35, 0);
 			vDisplayMenuItem(menuItem6, 45, 0);
 		}
-		else if(menuitem == 4 && frame == 3)
+		else if(menuitem == 4 && state == 30)
 		{
 			vDisplayMenuItem(menuItem3, 15, 0);
 			vDisplayMenuItem(menuItem4, 25, 1);
 			vDisplayMenuItem(menuItem5, 35, 0);
 			vDisplayMenuItem(menuItem6, 45, 0);
 		}
-		else if(menuitem == 5 && frame == 3)
+		else if(menuitem == 5 && state == 30)
 		{
 			vDisplayMenuItem(menuItem3, 15, 0);
 			vDisplayMenuItem(menuItem4, 25, 0);
 			vDisplayMenuItem(menuItem5, 35, 1);
 			vDisplayMenuItem(menuItem6, 45, 0);
 		}
-		else if(menuitem == 6 && frame == 3)
+		else if(menuitem == 6 && state == 30)
 		{
 			vDisplayMenuItem(menuItem3, 15, 0);
 			vDisplayMenuItem(menuItem4, 25, 0);
@@ -489,28 +412,28 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem6, 45, 1);
 		}
 	
-	/***************** End Frame *****************************/
+	/***************** End state *****************************/
 	}
 	/***************** Page 1 end ***************************/
 	
 	/*****************  Page 2 ******************************/
-	else if(page==2 && menuitem == 1)
+	else if(state < 10 && menuitem == 1)
 		vDisplayMenuPage(menuItem1, &contrast);
 	
 	
-	else if(page==2 && menuitem == 2)
+	else if(state < 10 && menuitem == 2)
 		vDisplayMenuPage(menuItem2, &volume);
 	
 	
-	else if(page==2 && menuitem == 3)
+	else if(state < 10 && menuitem == 3)
 		vDisplayCharMenuPage(menuItem3, language[selectedLanguage]);
 	
 	
-	else if(page==2 && menuitem == 4)
+	else if(state < 10 && menuitem == 4)
 		vDisplayCharMenuPage(menuItem4, difficulty[selectedDifficulty]);
 	
 	
-	else if(page==2 && menuitem == 5)
+	else if(state < 10 && menuitem == 5)
 		vDisplayCharMenuPage(menuItem5, Relay1[selectedRelay1]);
 		if(selectedRelay1 == 1)
 			turnRelay1_On();
