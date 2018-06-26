@@ -7,7 +7,7 @@ I modified this project for ESP32. The original project for STM32.
 * modification for ESP32: Zhan Beshchanov<zip1982b@gmail.com>
 
 
-![alt text](img/oled128x64.png "my first termostat :)")
+![alt text](img/oled128x64.jpg "my first termostat :)")
 Hardware:
 * esp32
 * OLED ssd1306 (128x64)
