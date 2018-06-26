@@ -183,13 +183,13 @@ void vDisplay(void *pvParameter)
 			change = 1;
 			printf("[vDisplay]rotate = %d\n", rotate);
 			switch(rotate){
-				case 0: //down
+				case 0: //down = clockwise
 					down = 1;
 					break;
-				case 1: //up
+				case 1: //up = counter clockwise
 					up = 1;
 					break;
-				case 2: //middle - button pressed
+				case 2: //middle = button pressed
 					middle = 1;
 					break;
 			}
@@ -198,49 +198,82 @@ void vDisplay(void *pvParameter)
 		
 		
 		switch(state){
+			/*** Frame 1 ************************************************/
 			case 10:
 				frame = 1;
-				if(down){ menuitem++;}
-				if(up) { menuitem--; }
+				if(down) { menuitem++;}
+				else if(up) { menuitem--; }
+				
+				// go to Contrast
+				else if(middle && menuitem == 1) { state = 1; }
+				
+				// go to Volume
+				else if(middle && menuitem == 2) { state = 2; }
+				
+				// go to Language
+				else if(middle && menuitem == 3) { state = 3; }
+				
+				// go to Difficulty
+				else if(middle && menuitem == 4) { state = 4; }
+				
+				
 				if(menuitem == 0) { menuitem = 1; }
+				
 				if(menuitem > 4){
 					state = 20;
 					frame = 2;
 				}
-				//Contrast
-				if(middle && menuitem == 1){
-					state = 1;
-				}
-				//Volume
-				if(middle && menuitem == 2){
-					state = 2;
-				}
-				//Language
-				if(middle && menuitem == 3){
-					state = 3;
-				}
-				//Difficulty
-				if(middle && menuitem == 4){
-					state = 4;
-				}
+
 				break;
+			/*********************************************************/
+			
+			/*** Frame 2 *********************************************/
 			case 20:
 				if(down) { menuitem++; }
-				if(menuitem > 5){ state = 30; }
+				else if(up) { menuitem--; }
 				
-				if(up) { menuitem--; }
-				if(menuitem < 2) { state = 10; }
+				// go to Volume
+				else if(middle && menuitem == 2) { state = 2; }
+				
+				// go to Language
+				else if(middle && menuitem == 3) { state = 3; }
+				
+				// go to Difficulty
+				else if(middle && menuitem == 4) { state = 4; }
+				
+				// go to Relay
+				else if(middle && menuitem == 5) { state = 5; }
+				
+				if(menuitem > 5){ state = 30; }
+				else if(menuitem < 2) { state = 10; }
+				
+				
 				break;
+			/*********************************************************/
+			
+			/*** Frame 3 *********************************************/
 			case 30:
 				if(up) { menuitem--; }
-				if(menuitem < 3) { state = 20; }
+				else if(down) { menuitem++; }
+				else if(menuitem == 7) { menuitem = 6; }
 				
-				if(down) { menuitem++; }
-				if(menuitem == 7) { menuitem = 6; }
+				// go to Language
+				else if(middle && menuitem == 3) { state = 3; }
+				
+				// go to Difficulty
+				else if(middle && menuitem == 4) { state = 4; }
+				
+				// go to Relay
+				else if(middle && menuitem == 5) { state = 5; }
+				
+				if(menuitem < 3) { state = 20; }
 				
 				if(middle && menuitem == 6) { resetDefaults(); }
 				
 				break;
+			/********************************************************/
+			
+			/*** Contrast ***/
 			case 1:
 				if(down){
 					contrast++;
@@ -250,31 +283,50 @@ void vDisplay(void *pvParameter)
 					contrast--;
 					vSetContrast(contrast);
 				}
-				else if(middle && frame == 1){ state = 10; }
+				else if(middle && frame == 1) { state = 10; }
 				break;
 				
+			/*** Volume ***/
 			case 2:
 				if(down){ volume++; }
 				else if(up){ volume--; }
-				else if(middle){ state = 10; }
+				else if(middle && frame == 1) { state = 10; } // go to Frame 1
+				else if(middle && frame == 2) { state = 20; } // go to Frame 2
 				break;
-				
+			
+			/*** Language ***/
 			case 3:
-				if(down){ volume++; }
-				else if(up){ volume--; }
-				else if(middle){ state = 10; }
-				break;
+				if(down){ selectedLanguage++; }
+				else if(up){ selectedLanguage--; }
+				else if(middle && frame == 1){ state = 10; }
+				else if(middle && frame == 2){ state = 20; }
+				else if(middle && frame == 3){ state = 30; }
 				
+				if(selectedLanguage == -1) { selectedLanguage = 2; }
+				else if(selectedLanguage = 3) { selectedLanguage = 0; }
+				break;
+			
+			/*** Difficulty ***/
 			case 4:
-				if(down){ volume++; }
-				else if(up){ volume--; }
-				else if(middle){ state = 10; }
-				break;
+				if(down){ selectedDifficulty++; }
+				else if(up){ selectedDifficulty--; }
+				else if(middle && frame == 1){ state = 10; }
+				else if(middle && frame == 2){ state = 20; }
+				else if(middle && frame == 3){ state = 30; }
 				
+				if(selectedDifficulty == -1) { selectedDifficulty = 1;}
+				else if(selectedDifficulty == 2) { selectedDifficulty = 0;}
+				break;
+			
+			/*** Relay ***/
 			case 5:
-				if(down){ volume++; }
-				else if(up){ volume--; }
-				else if(middle){ state = 10; }
+				if(down){ selectedRelay1++; }
+				else if(up){ selectedRelay1--; }
+				else if(middle && frame == 2){ state = 20; }
+				else if(middle && frame == 3){ state = 30; }
+				
+				if(selectedRelay1 >= 2) { selectedRelay1 = 0; }
+				else if(selectedRelay1 <= -1) { selectedRelay1 = 1; }
 				break;
 		}
 		
