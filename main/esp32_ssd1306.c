@@ -303,7 +303,7 @@ void vDisplay(void *pvParameter)
 				else if(middle && frame == 3){ state = 30; }
 				
 				if(selectedLanguage == -1) { selectedLanguage = 2; }
-				else if(selectedLanguage = 3) { selectedLanguage = 0; }
+				else if(selectedLanguage == 3) { selectedLanguage = 0; }
 				break;
 			
 			/*** Difficulty ***/
@@ -329,23 +329,6 @@ void vDisplay(void *pvParameter)
 				else if(selectedRelay1 <= -1) { selectedRelay1 = 1; }
 				break;
 		}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
     }
 	vTaskDelete(NULL);
 }
@@ -523,12 +506,12 @@ void vDisplayMenuPage(char *menuitem, uint8_t *value)
 	SSD1306_Puts(menuitem, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
 	SSD1306_DrawLine(10, 12, 110, 12, SSD1306_COLOR_WHITE); // draw line
 	SSD1306_GotoXY(5, 15);
-	SSD1306_Puts("Value", &Font_7x10, SSD1306_COLOR_WHITE);
-	SSD1306_GotoXY(5, 25);
+	SSD1306_Puts("Value", &Font_11x18, SSD1306_COLOR_WHITE);
+	SSD1306_GotoXY(5, 35);
 	char v[24];
 	itoa(*value, v, 10);
 	//printf("v = %s\n", v);
-	SSD1306_Puts(v, &Font_7x10, SSD1306_COLOR_WHITE);
+	SSD1306_Puts(v, &Font_11x18, SSD1306_COLOR_WHITE);
 	SSD1306_UpdateScreen();
 }
 
@@ -543,9 +526,9 @@ void vDisplayCharMenuPage(char *menuitem, char *value)
 	SSD1306_Puts(menuitem, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, белым цветом
 	SSD1306_DrawLine(10, 12, 110, 12, SSD1306_COLOR_WHITE); // draw line
 	SSD1306_GotoXY(5, 15);
-	SSD1306_Puts("Value", &Font_7x10, SSD1306_COLOR_WHITE);
-	SSD1306_GotoXY(5, 25);
-	SSD1306_Puts(value, &Font_7x10, SSD1306_COLOR_WHITE);
+	SSD1306_Puts("Value", &Font_11x18, SSD1306_COLOR_WHITE);
+	SSD1306_GotoXY(5, 35);
+	SSD1306_Puts(value, &Font_11x18, SSD1306_COLOR_WHITE);
 	SSD1306_UpdateScreen();
 }
 
