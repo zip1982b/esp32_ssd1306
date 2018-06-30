@@ -200,6 +200,7 @@ void vDisplay(void *pvParameter)
 		switch(state){
 			/*** Frame 1 ************************************************/
 			case 10:
+				printf("State = 10\n");
 				frame = 1;
 				if(down) { menuitem++;}
 				else if(up) { menuitem--; }
@@ -229,6 +230,7 @@ void vDisplay(void *pvParameter)
 			
 			/*** Frame 2 *********************************************/
 			case 20:
+				printf("State = 20\n");
 				if(down) { menuitem++; }
 				else if(up) { menuitem--; }
 				
@@ -253,6 +255,7 @@ void vDisplay(void *pvParameter)
 			
 			/*** Frame 3 *********************************************/
 			case 30:
+				printf("State = 30\n");
 				if(up) { menuitem--; }
 				else if(down) { menuitem++; }
 				else if(menuitem == 7) { menuitem = 6; }
@@ -275,6 +278,7 @@ void vDisplay(void *pvParameter)
 			
 			/*** Contrast ***/
 			case 1:
+				printf("State = 1\n");
 				if(down){
 					contrast++;
 					vSetContrast(contrast);
@@ -288,6 +292,7 @@ void vDisplay(void *pvParameter)
 				
 			/*** Volume ***/
 			case 2:
+				printf("State = 2\n");
 				if(down){ volume++; }
 				else if(up){ volume--; }
 				else if(middle && frame == 1) { state = 10; } // go to Frame 1
@@ -296,6 +301,7 @@ void vDisplay(void *pvParameter)
 			
 			/*** Language ***/
 			case 3:
+				printf("State = 3\n");
 				if(down){ selectedLanguage++; }
 				else if(up){ selectedLanguage--; }
 				else if(middle && frame == 1){ state = 10; }
@@ -308,6 +314,7 @@ void vDisplay(void *pvParameter)
 			
 			/*** Difficulty ***/
 			case 4:
+				printf("State = 4\n");
 				if(down){ selectedDifficulty++; }
 				else if(up){ selectedDifficulty--; }
 				else if(middle && frame == 1){ state = 10; }
@@ -320,6 +327,7 @@ void vDisplay(void *pvParameter)
 			
 			/*** Relay ***/
 			case 5:
+				printf("State = 5\n");
 				if(down){ selectedRelay1++; }
 				else if(up){ selectedRelay1--; }
 				else if(middle && frame == 2){ state = 20; }
@@ -359,7 +367,7 @@ void vDrawMenu(void)
 		SSD1306_DrawLine(10, 12, 110, 12, SSD1306_COLOR_WHITE);
 		//SSD1306_UpdateScreen();
 	
-	/*************** state 1 ******************************/
+	/*************** state 10 ******************************/
 		if(menuitem == 1 && state == 10)
 		{
 			vDisplayMenuItem(menuItem1, 15, 1);
@@ -388,7 +396,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 1);
 		}
-	/************ state 2 **********************************/
+	/************ state 20 **********************************/
 		else if(menuitem == 2 && state == 20)
 		{
 			vDisplayMenuItem(menuItem2, 15, 1);
@@ -417,7 +425,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem4, 35, 0);
 			vDisplayMenuItem(menuItem5, 45, 1);
 		}
-	/************* state 3 *********************************/
+	/************* state 30 *********************************/
 		else if(menuitem == 3 && state == 30)
 		{
 			vDisplayMenuItem(menuItem3, 15, 1);
