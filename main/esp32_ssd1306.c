@@ -246,8 +246,14 @@ void vDisplay(void *pvParameter)
 				// go to Relay
 				else if(middle && menuitem == 5) { state = 5; }
 				
-				if(menuitem > 5){ state = 30; }
-				else if(menuitem < 2) { state = 10; }
+				if(menuitem > 5){ 
+					state = 30;
+					frame = 3;
+				}
+				else if(menuitem < 2) { 
+					state = 10;
+					frame = 1;
+				}
 				
 				
 				break;
@@ -269,7 +275,10 @@ void vDisplay(void *pvParameter)
 				// go to Relay
 				else if(middle && menuitem == 5) { state = 5; }
 				
-				if(menuitem < 3) { state = 20; }
+				if(menuitem < 3) { 
+					state = 20;
+					frame = 2;
+				}
 				
 				if(middle && menuitem == 6) { resetDefaults(); }
 				
@@ -370,7 +379,7 @@ void vDrawMenu(void)
 	/*************** state 10 ******************************/
 		if(menuitem == 1 && state == 10)
 		{
-			vDisplayMenuItem(menuItem1, 15, 1);
+			vDisplayMenuItem(menuItem1, 15, 1); // Contrast
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 0);
@@ -378,7 +387,7 @@ void vDrawMenu(void)
 		else if(menuitem == 2 && state == 10)
 		{
 			vDisplayMenuItem(menuItem1, 15, 0);
-			vDisplayMenuItem(menuItem2, 25, 1);
+			vDisplayMenuItem(menuItem2, 25, 1); // Volume
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 0);
 		}
@@ -386,7 +395,7 @@ void vDrawMenu(void)
 		{
 			vDisplayMenuItem(menuItem1, 15, 0);
 			vDisplayMenuItem(menuItem2, 25, 0);
-			vDisplayMenuItem(menuItem3, 35, 1);
+			vDisplayMenuItem(menuItem3, 35, 1); // Language
 			vDisplayMenuItem(menuItem4, 45, 0);
 		}
 		else if(menuitem == 4 && state == 10)
@@ -394,7 +403,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem1, 15, 0);
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 0);
-			vDisplayMenuItem(menuItem4, 45, 1);
+			vDisplayMenuItem(menuItem4, 45, 1); // Difficulty
 		}
 	/************ state 20 **********************************/
 		else if(menuitem == 2 && state == 20)
