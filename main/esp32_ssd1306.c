@@ -383,6 +383,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 2 && state == 10)
 		{
@@ -390,6 +391,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem2, 25, 1); // Volume
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 3 && state == 10)
 		{
@@ -397,6 +399,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 1); // Language
 			vDisplayMenuItem(menuItem4, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 4 && state == 10)
 		{
@@ -404,6 +407,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem2, 25, 0);
 			vDisplayMenuItem(menuItem3, 35, 0);
 			vDisplayMenuItem(menuItem4, 45, 1); // Difficulty
+			SSD1306_UpdateScreen();
 		}
 	/************ state 20 **********************************/
 		else if(menuitem == 2 && state == 20)
@@ -412,6 +416,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem3, 25, 0);
 			vDisplayMenuItem(menuItem4, 35, 0);
 			vDisplayMenuItem(menuItem5, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 3 && state == 20)
 		{
@@ -419,6 +424,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem3, 25, 1);
 			vDisplayMenuItem(menuItem4, 35, 0);
 			vDisplayMenuItem(menuItem5, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 4 && state == 20)
 		{
@@ -426,6 +432,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem3, 25, 0);
 			vDisplayMenuItem(menuItem4, 35, 1);
 			vDisplayMenuItem(menuItem5, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 5 && state == 20)
 		{
@@ -433,6 +440,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem3, 25, 0);
 			vDisplayMenuItem(menuItem4, 35, 0);
 			vDisplayMenuItem(menuItem5, 45, 1);
+			SSD1306_UpdateScreen();
 		}
 	/************* state 30 *********************************/
 		else if(menuitem == 3 && state == 30)
@@ -441,6 +449,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem4, 25, 0);
 			vDisplayMenuItem(menuItem5, 35, 0);
 			vDisplayMenuItem(menuItem6, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 4 && state == 30)
 		{
@@ -448,6 +457,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem4, 25, 1);
 			vDisplayMenuItem(menuItem5, 35, 0);
 			vDisplayMenuItem(menuItem6, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 5 && state == 30)
 		{
@@ -455,6 +465,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem4, 25, 0);
 			vDisplayMenuItem(menuItem5, 35, 1);
 			vDisplayMenuItem(menuItem6, 45, 0);
+			SSD1306_UpdateScreen();
 		}
 		else if(menuitem == 6 && state == 30)
 		{
@@ -462,6 +473,7 @@ void vDrawMenu(void)
 			vDisplayMenuItem(menuItem4, 25, 0);
 			vDisplayMenuItem(menuItem5, 35, 0);
 			vDisplayMenuItem(menuItem6, 45, 1);
+			SSD1306_UpdateScreen();
 		}
 	
 	/***************** End state *****************************/
@@ -510,7 +522,7 @@ void vDisplayMenuItem(char *item, uint8_t position, uint8_t selected)
 		SSD1306_Puts(item, &Font_7x10, SSD1306_COLOR_WHITE); // шрифт Font_7x10, цвет белым
 		//SSD1306_UpdateScreen();
 	}
-	SSD1306_UpdateScreen();
+	//SSD1306_UpdateScreen();
 }
 
 
